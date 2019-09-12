@@ -8,7 +8,7 @@ function displayCanvas () {
     canvas.setAttribute("height", "500");
     gameDiv.appendChild(canvas);
 
-    let canvas = document.querySelector("canvas")
+    canvas = document.querySelector("canvas")
     let cx = canvas.getContext("2d");
     cx.strokeStyle = "black";
     cx.lineWidth = 1;
