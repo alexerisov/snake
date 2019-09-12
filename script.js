@@ -1,40 +1,35 @@
 'use strict';
 
-function displayCanvas () {
+function level (plan) {
+  this.width = 10;
+  this.height = 10;
+  this.grid = new Array[width * height]();
 
-    let gameDiv = document.getElementById("game");
-    let canvas = document.createElement("canvas");
-    canvas.setAttribute("width", "500");
-    canvas.setAttribute("height", "500");
-    gameDiv.appendChild(canvas);
+  for (let i = 0; i < this.height; i++) {
+    for (let j = 0; j < this.width; j++) {
 
-    canvas = document.querySelector("canvas")
-    let cx = canvas.getContext("2d");
-    cx.strokeStyle = "black";
-    cx.lineWidth = 1;
-    
-    let number = 25,
-        step = 20;
-
-    for (let i = 0; i < number; i++) {
-        for (let j = 0; j < number; j++) {
-        cx.strokeRect(i*step, j*step, step, step);
-        }
     }
+  }
 }
 
+function displayCanvas () {
+  const gameDiv = document.getElementById('game');
+  let canvas = document.createElement('canvas');
+  canvas.setAttribute('width', '500');
+  canvas.setAttribute('height', '500');
+  gameDiv.appendChild(canvas);
 
-function level (plan) {
+  canvas = document.querySelector('canvas');
+  const cx = canvas.getContext('2d');
+  cx.strokeStyle = 'black';
+  cx.lineWidth = 1;
 
-this.width = 10;
-this.height = 10;
-this.grid = new Array[width * height];
+  const number = 25;
+        let step = 20;
 
-for (let i = 0; i < height; i++) {
- for (let j = 0; j < width; j++) {
-
-} 
-} 
-
-} 
-
+  for (let i = 0; i < number; i++) {
+    for (let j = 0; j < number; j++) {
+      cx.strokeRect(i * step, j * step, step, step);
+    }
+  }
+}
