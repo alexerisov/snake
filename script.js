@@ -1,5 +1,6 @@
 'use strict';
 
+function displayCanvas() {
 
     let gameDiv = document.getElementById("game");
     let canvas = document.createElement("canvas");
@@ -20,7 +21,7 @@
         cx.strokeRect(i*step, j*step, step, step);
         }
     }
-
+}
 
 
 function level (plan) {
