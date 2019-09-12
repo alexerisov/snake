@@ -8,25 +8,8 @@
 </head>
 
 <body>
-    <canvas width="500" height="500"></canvas>
-
-    <script>
-        var canvas = document.querySelector("canvas");
-        var cx = canvas.getContext("2d");
-        cx.strokeStyle = "black";
-        cx.lineWidth = 1;
-        
-        let number = 25,
-            step = 20;
-
-        for (let i = 0; i < number; i++) {
-            for (let j = 0; j < number; j++) {
-            cx.strokeRect(i*step, j*step, step, step);
-            }
-        }
-    </script>
-
-
+    <div id="game"></div>
+ 
     <script src="script.js"></script>
 </body>
 
