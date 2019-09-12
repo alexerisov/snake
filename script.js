@@ -1,6 +1,6 @@
 'use strict';
 
-function displayCanvas() {
+function displayCanvas () {
 
     let gameDiv = document.getElementById("game");
     let canvas = document.createElement("canvas");
