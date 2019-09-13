@@ -2,19 +2,32 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
     <title>Snake</title>
-    <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
-
+    <script src="dat.gui.min.js"></script>
+    <script src="script.js"></script>
 </head>
 
 <body>
-    <div id="game"></div>
+    <canvas id="canvas"></canvas>
 
     <script>
-        displayCanvas();
+        window.addEventListener('load',
+            function () {
+                var gui = new dat.GUI();
+                gui.addColor(guiObj, 'strokeColor');
+                gui.addColor(guiObj, 'snakeColor');
+
+                function loop() {
+                    displayCanvas();
+                    requestAnimationFrame(function () {
+                        loop();
+                    });
+                }
+                loop();
+            }, false);
     </script>
-    
 </body>
 
 </html>
