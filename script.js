@@ -1,3 +1,10 @@
+var guiObj = {
+  snakeColor: '#0b401b',
+  strokeColor: '#181717',
+  width: 25,
+  heigth: 25
+};
+
 function drawLevel (width, heigth) {
   const space = new Array(heigth);
   this.width = width;
@@ -13,7 +20,7 @@ function drawLevel (width, heigth) {
         case (y === 0 || y === heigth - 1):
           line += '#';
           break;
-        case (x === 12 && y === 12):
+        case (x === 1 && y === 1):
           line += 's';
           break;
 
@@ -27,8 +34,7 @@ function drawLevel (width, heigth) {
   return space;
 }
 
-const level = drawLevel(25, 25);
-console.log(level);
+let level = drawLevel(guiObj.width, guiObj.heigth);
 
 function Vector (x, y) {
   this.x = x;
@@ -62,11 +68,6 @@ var directions = {
   sw: new Vector(-1, 1),
   w: new Vector(-1, 0),
   nw: new Vector(-1, -1)
-};
-
-var guiObj = {
-  snakeColor: '#0b401b',
-  strokeColor: '#181717'
 };
 
 function elementFromChar (legend, ch) {

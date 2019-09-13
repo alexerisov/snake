@@ -18,8 +18,11 @@
                 var gui = new dat.GUI();
                 gui.addColor(guiObj, 'strokeColor');
                 gui.addColor(guiObj, 'snakeColor');
+                gui.add(guiObj, 'width').min(5).max(25).step(1);
+                gui.add(guiObj, 'heigth').min(5).max(25).step(1);
 
                 function loop() {
+                    level = drawLevel(guiObj.width, guiObj.heigth);
                     displayCanvas();
                     requestAnimationFrame(function () {
                         loop();

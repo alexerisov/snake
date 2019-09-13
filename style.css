@@ -18,5 +18,4 @@ canvas {
     height: var(--height);
     margin-left: var(--margin-left);
     margin-top: var(--margin-top);
-    border: 1px solid rgb(17, 17, 17);
 }
