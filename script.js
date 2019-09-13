@@ -1,8 +1,6 @@
 var guiObj = {
   snakeColor: '#0b401b',
-  strokeColor: '#181717',
-  width: 25,
-  heigth: 25
+  strokeColor: '#181717'
 };
 
 function drawLevel (width, heigth) {
@@ -34,7 +32,7 @@ function drawLevel (width, heigth) {
   return space;
 }
 
-var level = drawLevel(guiObj.width, guiObj.heigth);
+var level = drawLevel(25, 25);
 
 function Vector (x, y) {
   this.x = x;
