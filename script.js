@@ -34,7 +34,7 @@ function drawLevel (width, heigth) {
   return space;
 }
 
-let level = drawLevel(guiObj.width, guiObj.heigth);
+const level = drawLevel(guiObj.width, guiObj.heigth);
 
 function Vector (x, y) {
   this.x = x;
