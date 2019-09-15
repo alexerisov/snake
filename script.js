@@ -3,106 +3,139 @@ var guiObj = {
   strokeColor: '#181717'
 };
 
-function drawLevel (width, heigth) {
-  const space = new Array(heigth);
-  this.width = width;
-  this.heigth = heigth;
-
-  for (let y = 0; y < heigth; y++) {
-    let line = '';
-    for (let x = 0; x < width; x++) {
-      switch (true) {
-        case (x === 0 || x === width - 1):
-          line += '#';
-          break;
-        case (y === 0 || y === heigth - 1):
-          line += '#';
-          break;
-        case (x === 1 && y === 1):
-          line += 's';
-          break;
-
-        default:
-          line += ' ';
-          break;
+class Plan {
+  constructor (width, heigth) {
+    const space = new Array(heigth);
+    this.width = width;
+    this.heigth = heigth;
+    for (let y = 0; y < heigth; y++) {
+      let line = '';
+      for (let x = 0; x < width; x++) {
+        switch (true) {
+          case (x === 0 || x === width - 1):
+            line += '#';
+            break;
+          case (y === 0 || y === heigth - 1):
+            line += '#';
+            break;
+          case ( (x === 3 && y === 3) || (x === 3 && y === 4) || (x === 3 && y === 5) ):
+            line += 's';
+            break;
+          default:
+            line += ' ';
+            break;
+        }
+        space[y] = line;
       }
-      space[y] = line;
+    }
+    return space;
+  }
+}
+
+class Level {
+  constructor (plan) {
+    this.grid = new Array(plan.length);
+    this.width = plan[0].length;
+    this.heigth = plan.length;
+    this.snake = [];
+    // this.apples = [];
+
+    for (let y = 0; y < this.heigth; y++) {
+      const line = plan[y];
+      this.grid[y] = [];
+      for (let x = 0; x < this.width; x++) {
+        const ch = line[x];
+        switch (true) {
+          case (ch === '#'):
+            this.grid[y].push('wall');
+            break;
+          case (ch === '@'):
+            this.grid[y].push('apple');
+            this.apples.push({
+              x: x,
+              y: y
+            });
+            break;
+          case (ch === 's'):
+            this.grid[y].push('snake');
+            this.snake.push({
+              x: x,
+              y: y
+            });
+            break;
+          default:
+            this.grid[y].push('empty');
+            break;
+        }
+      }
     }
   }
-  return space;
 }
 
-var level = drawLevel(25, 25);
-
-function Vector (x, y) {
-  this.x = x;
-  this.y = y;
-}
-Vector.prototype.plus = function (other) {
-  return new Vector(this.x + other.x, this.y + other.y);
-};
-
-function Grid (width, height) {
-  this.space = new Array(width * height);
-  this.width = width;
-  this.height = height;
-}
-Grid.prototype.isInside = function (vector) {
-  return vector.x >= 0 && vector.x < this.width &&
-    vector.y >= 0 && vector.y < this.height;
-};
-Grid.prototype.get = function (vector) {
-  return this.space[vector.x + this.width * vector.y];
-};
-Grid.prototype.set = function (vector, value) {
-  this.space[vector.x + this.width * vector.y] = value;
-};
-var directions = {
-  n: new Vector(0, -1),
-  ne: new Vector(1, -1),
-  e: new Vector(1, 0),
-  se: new Vector(1, 1),
-  s: new Vector(0, 1),
-  sw: new Vector(-1, 1),
-  w: new Vector(-1, 0),
-  nw: new Vector(-1, -1)
-};
-
-function elementFromChar (legend, ch) {
-  if (ch === ' ') {
-    return null;
+var directionNames = {
+  up: {
+    x: 0,
+    y: -1
+  },
+  down: {
+    x: 0,
+    y: 1
+  },
+  left: {
+    x: -1,
+    y: 0
+  },
+  right: {
+    x: 1,
+    y: 0
   }
-  var element = new legend[ch]();
-  element.originChar = ch;
-  return element;
-}
+};
+const plan = new Plan(25, 25);
+const level = new Level(plan);
+class Snake {
+  constructor () {
+    this.body = [...level.snake];
+    this.direction = directionNames.right;
+  }
 
-function World (map, legend) {
-  var grid = new Grid(map[0].length, map.length);
-  this.grid = grid;
-  this.legend = legend;
+  move () {
 
-  map.forEach(function (line, y) {
-    for (var x = 0; x < line.length; x++) {
-      grid.set(new Vector(x, y),
-        elementFromChar(legend, line[x]));
+    let target = level.grid[this.body[0].x + this.direction.x][this.body[0].y + this.direction.y];
+    if (target != 'wall' && target != 'snake') {
+      Snake.body.unshift(target);
+    } else false
+    this.body.pop();
+  }
+
+  turn () {
+    const pressedKey = 'key';
+    switch (pressedKey) {
+      case (keyUp):
+        this.direction = directionNames.up;
+        break;
+      case (keyDown):
+        this.direction = directionNames.down;
+        break;
+      case (keyLeft):
+        this.direction = directionNames.left;
+        break;
+      case (keyRight):
+        this.direction = directionNames.right;
+        break;
     }
-  });
-}
+  }
 
-function charFromElement (element) {
-  if (element == null) {
-    return ' ';
-  } else {
-    return element.originChar;
+  eat () {
+    target = -Snake.direction;
+    Snake.body.push(target);
   }
 }
 
-var world = new World(level, {
-  '#': Wall,
-  's': Snake,
-  '@': Apple
-});
+let snake = new Snake();
+
+console.log(level.grid[3][3]);
+console.log(snake.body);
+
 
 function displayCanvas () {
   const cellSize = 20;
@@ -111,7 +144,6 @@ function displayCanvas () {
   canvas.setAttribute('height', '500');
 
   const cx = canvas.getContext('2d');
-  cx.clearRect(0, 0, cx.width, cx.height);
 
   function drawRect (x, y, size, color) {
     cx.fillStyle = color;
@@ -145,22 +177,22 @@ function displayCanvas () {
     drawStroke(x, y, cellSize, guiObj.strokeColor);
   }
 
-  for (let y = 0; y < level.length; y++) {
-    const line = level[y];
-    for (let x = 0; x < level[0].length; x++) {
+  for (let y = 0; y < level.heigth; y++) {
+    const line = level.grid[y];
+    for (let x = 0; x < level.width; x++) {
       const element = line[x];
 
       switch (element) {
-        case '#':
+        case 'wall':
           drawWall(x, y);
           break;
-        case 's':
+        case 'snake':
           drawSnake(x, y);
           break;
-        case '@':
+        case 'apple':
           drawApple(x, y);
           break;
-        default:
+        case 'empty':
           drawEmptySpace(x, y);
           break;
       }
