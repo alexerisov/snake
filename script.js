@@ -1,72 +1,74 @@
 var guiObj = {
   snakeColor: '#0b401b',
-  strokeColor: '#181717'
+  strokeColor: '#181717',
+  appleColor: '#4a0c0c'
 };
 
-class Plan {
-  constructor (width, heigth) {
-    const space = new Array(heigth);
-    this.width = width;
-    this.heigth = heigth;
-    for (let y = 0; y < heigth; y++) {
-      let line = '';
-      for (let x = 0; x < width; x++) {
-        switch (true) {
-          case (x === 0 || x === width - 1):
-            line += '#';
-            break;
-          case (y === 0 || y === heigth - 1):
-            line += '#';
-            break;
-          case ( (x === 3 && y === 3) || (x === 3 && y === 4) || (x === 3 && y === 5) ):
-            line += 's';
-            break;
-          default:
-            line += ' ';
-            break;
-        }
-        space[y] = line;
+function Plan (width, heigth) {
+  const space = new Array(heigth);
+  this.width = width;
+  this.heigth = heigth;
+  for (let y = 0; y < heigth; y++) {
+    let line = '';
+    for (let x = 0; x < width; x++) {
+      switch (true) {
+        case (x === 0 || x === width - 1):
+          line += '#';
+          break;
+        case (y === 0 || y === heigth - 1):
+          line += '#';
+          break;
+        case ((x === 3 && y === 3) || (x === 4 && y === 3) || (x === 5 && y === 3)):
+          line += 's';
+          break;
+        case (x === 13 && y === 13):
+          line += '@';
+          break;
+        default:
+          line += ' ';
+          break;
       }
+      space[y] = line;
     }
-    return space;
   }
+  return space;
 }
 
-class Level {
-  constructor (plan) {
-    this.grid = new Array(plan.length);
-    this.width = plan[0].length;
-    this.heigth = plan.length;
-    this.snake = [];
-    // this.apples = [];
+const plan = Plan(25, 25);
 
-    for (let y = 0; y < this.heigth; y++) {
-      const line = plan[y];
-      this.grid[y] = [];
-      for (let x = 0; x < this.width; x++) {
-        const ch = line[x];
-        switch (true) {
-          case (ch === '#'):
-            this.grid[y].push('wall');
-            break;
-          case (ch === '@'):
-            this.grid[y].push('apple');
-            this.apples.push({
-              x: x,
-              y: y
-            });
-            break;
-          case (ch === 's'):
-            this.grid[y].push('snake');
-            this.snake.push({
-              x: x,
-              y: y
-            });
-            break;
-          default:
-            this.grid[y].push('empty');
-            break;
-        }
+function Level (plan) {
+  this.grid = new Array(plan.length);
+  this.width = plan[0].length;
+  this.heigth = plan.length;
+  this.snake = new Snake();
+  this.apples = new Apple();
+
+  for (let y = 0; y < this.heigth; y++) {
+    const line = plan[y];
+    this.grid[y] = [];
+    for (let x = 0; x < this.width; x++) {
+      const ch = line[x];
+      switch (true) {
+        case (ch === '#'):
+          this.grid[y].push('wall');
+          break;
+        case (ch === '@'):
+          this.grid[y].push('apple');
+          this.apples.array.push({
+            x: x,
+            y: y
+          });
+          break;
+        case (ch === 's'):
+          this.grid[y].push('snake');
+          this.snake.body.unshift({
+            x: x,
+            y: y
+          });
+          break;
+        default:
+          this.grid[y].push('empty');
+          break;
       }
     }
   }
@@ -90,52 +92,100 @@ var directionNames = {
     y: 0
   }
 };
-const plan = new Plan(25, 25);
-const level = new Level(plan);
-class Snake {
-  constructor () {
-    this.body = [...level.snake];
-    this.direction = directionNames.right;
-  }
 
-  move () {
+let level = new Level(plan);
 
-    let target = level.grid[this.body[0].x + this.direction.x][this.body[0].y + this.direction.y];
-    if (target != 'wall' && target != 'snake') {
-      Snake.body.unshift(target);
-    } else false
-    this.body.pop();
-  }
-
-  turn () {
-    const pressedKey = 'key';
-    switch (pressedKey) {
-      case (keyUp):
-        this.direction = directionNames.up;
-        break;
-      case (keyDown):
-        this.direction = directionNames.down;
-        break;
-      case (keyLeft):
-        this.direction = directionNames.left;
-        break;
-      case (keyRight):
-        this.direction = directionNames.right;
-        break;
-    }
-  }
-
-  eat () {
-    target = -Snake.direction;
-    Snake.body.push(target);
-  }
+function Snake () {
+  this.body = [];
+  this.direction = directionNames.right;
 }
 
-let snake = new Snake();
+Snake.prototype.move = function () {
+  const target = level.grid[this.body[0].y + this.direction.y][this.body[0].x + this.direction.x];
+  const targetX = this.body[0].x + this.direction.x;
+  const targetY = this.body[0].y + this.direction.y;
+  const lastElement = this.body[this.body.length - 1];
 
-console.log(level.grid[3][3]);
-console.log(snake.body);
+  if (target != 'wall' && target != 'snake') {
+    level.grid[targetY][targetX] = 'snake';
+    this.body.unshift({
+      x: targetX,
+      y: targetY
+    });
+    if (target === 'apple') {
+      this.body.push(level.grid[lastElement.y - this.direction.y][lastElement.x - this.direction.x])
+      level.apples.spawn();
+    }
+    level.grid[lastElement.y][lastElement.x] = 'empty';
+    this.body.pop();
+    
+  } else level = new Level(plan);
+};
 
+Snake.prototype.turn = function (direction) {
+  switch (direction) {
+    case ('up'):
+      this.direction = directionNames.up;
+      break;
+    case ('down'):
+      this.direction = directionNames.down;
+      break;
+    case ('left'):
+      this.direction = directionNames.left;
+      break;
+    case ('right'):
+      this.direction = directionNames.right;
+      break;
+  }
+};
+
+function Apple () {
+  this.array = [];
+}
+
+Apple.prototype.spawn = function () {
+  function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+  let targetX = getRandomInt(1, level.width - 1);
+  let targetY = getRandomInt(1, level.heigth - 1);
+  level.grid[targetY][targetX] = 'apple';
+}
+
+const arrowCodes = {
+  37: 'left',
+  38: 'up',
+  39: 'right',
+  40: 'down'
+};
+
+this.addEventListener('keydown', function (event) {
+  switch (event.which) {
+    case (37):
+      level.snake.turn('left');
+      break;
+    case (38):
+      level.snake.turn('up');
+      break;
+    case (39):
+      level.snake.turn('right');
+      break;
+    case (40):
+      level.snake.turn('down');
+      break;
+    case (13):
+      let timer = this.setInterval(function () {
+        level.snake.move();
+      }, 250);
+      break;
+    case (27):
+      this.clearInterval(timer);
+      level = new Level(plan);
+      break;
+  }
+});
 
 function displayCanvas () {
   const cellSize = 20;
@@ -169,7 +219,7 @@ function displayCanvas () {
   }
 
   function drawApple (x, y) {
-    drawRect(x, y, cellSize, 'red');
+    drawRect(x, y, cellSize, guiObj.appleColor);
   }
 
   function drawEmptySpace (x, y) {
