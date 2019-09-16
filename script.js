@@ -1,7 +1,24 @@
 var guiObj = {
-  snakeColor: '#0b401b',
-  strokeColor: '#181717',
-  appleColor: '#4a0c0c'
+
+  // Wall
+  wallGradientColor1: '#323232',
+  wallGradientColor2: '#232323',
+  wallStrokeColor: '#232323',
+
+  //  Empty
+  emptyFillColor: '#222222',
+  emptyStrokeColor: '#181717',
+
+  // Snake
+  snakeFillColor: '#0b401b',
+  snakeStrokeColor: '#0b180f',
+
+  // Apple
+  appleFillColor: '#4a0c0c',
+  appleStrokeColor: '#110707',
+
+  // Other
+  godMode: false
 };
 
 function Plan (width, heigth) {
@@ -119,7 +136,11 @@ Snake.prototype.move = function () {
     level.grid[lastElement.y][lastElement.x] = 'empty';
     this.body.pop();
     
-  } else level = new Level(plan);
+  } else if (guiObj.godMode === true) {
+    //do something in godMode
+  }
+  else
+  level = new Level(plan);
 };
 
 Snake.prototype.turn = function (direction) {
@@ -200,34 +221,36 @@ function displayCanvas () {
 
   function drawRect (x, y, size, color) {
     cx.fillStyle = color;
-    cx.fillRect(x * size, y * size, size, size);
+    cx.fillRect(x * size, y * size, size - 1, size - 1);
   }
 
   function drawStroke (x, y, size, color) {
     cx.strokeStyle = color;
     cx.lineWidth = 1;
-    cx.strokeRect(x * size, y * size, size, size);
+    cx.strokeRect(x * size, y * size, size - 1, size - 1);
   }
 
   function drawWall (x, y) {
     const gradient = cx.createLinearGradient(x * cellSize, y * cellSize, (x + 1) * cellSize, (y + 1) * cellSize);
-    gradient.addColorStop(0, 'rgb(50, 50, 50)');
-    gradient.addColorStop(1, 'rgb(35, 35, 35)');
+    gradient.addColorStop(0, guiObj.wallGradientColor1);
+    gradient.addColorStop(1, guiObj.wallGradientColor2);
     drawRect(x, y, cellSize, gradient);
-    // drawStroke(x, y, cellSize, 'rgb(45, 45, 45)');
+    drawStroke(x, y, cellSize, guiObj.wallStrokeColor);
   }
 
   function drawSnake (x, y) {
-    drawRect(x, y, cellSize, guiObj.snakeColor);
+    drawRect(x, y, cellSize, guiObj.snakeFillColor);
+    drawStroke(x, y, cellSize, guiObj.snakeStrokeColor);
   }
 
   function drawApple (x, y) {
-    drawRect(x, y, cellSize, guiObj.appleColor);
+    drawRect(x, y, cellSize, guiObj.appleFillColor);
+    drawStroke(x, y, cellSize, guiObj.appleStrokeColor);
   }
 
   function drawEmptySpace (x, y) {
-    drawRect(x, y, cellSize, '#222222');
-    drawStroke(x, y, cellSize, guiObj.strokeColor);
+    drawRect(x, y, cellSize, guiObj.emptyFillColor);
+    drawStroke(x, y, cellSize, guiObj.emptyStrokeColor);
   }
 
   for (let y = 0; y < level.heigth; y++) {

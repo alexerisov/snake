@@ -15,10 +15,27 @@
     <script>
         window.addEventListener('load',
             function () {
-                var gui = new dat.GUI();
-                gui.addColor(guiObj, 'strokeColor');
-                gui.addColor(guiObj, 'snakeColor');
-                gui.addColor(guiObj, 'appleColor');
+                let gui = new dat.GUI();
+
+                let f1 = gui.addFolder('Settings');
+                    f1.add(guiObj, 'godMode'); 
+
+                let f2 = gui.addFolder('Wall');
+                    f2.addColor(guiObj, 'wallGradientColor1');
+                    f2.addColor(guiObj, 'wallGradientColor2');
+                    f2.addColor(guiObj, 'wallStrokeColor');
+
+                let f3 = gui.addFolder('Empty');
+                    f3.addColor(guiObj, 'emptyFillColor');
+                    f3.addColor(guiObj, 'emptyStrokeColor');
+
+                let f4 = gui.addFolder('Snake');
+                    f4.addColor(guiObj, 'snakeFillColor');
+                    f4.addColor(guiObj, 'snakeStrokeColor');
+
+                let f5 = gui.addFolder('Apple');
+                    f5.addColor(guiObj, 'appleFillColor');
+                    f5.addColor(guiObj, 'appleStrokeColor');
 
 
                 function loop() {
