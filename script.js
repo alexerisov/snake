@@ -151,7 +151,10 @@ Apple.prototype.spawn = function () {
   }
   let targetX = getRandomInt(1, level.width - 1);
   let targetY = getRandomInt(1, level.heigth - 1);
-  level.grid[targetY][targetX] = 'apple';
+  let target = level.grid[targetY][targetX];
+  if (target === 'empty')
+   level.grid[targetY][targetX] = 'apple';
+  else level.apples.spawn();
 }
 
 const arrowCodes = {
