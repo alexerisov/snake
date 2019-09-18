@@ -3,23 +3,32 @@ var guiObj = {
   // Wall
   wallGradientColor1: '#323232',
   wallGradientColor2: '#232323',
+  isWallStroke: false,
   wallStrokeColor: '#232323',
+  wallStrokeWidth: 0.1,
 
   //  Empty
-  emptyFillColor: '#222222',
-  emptyStrokeColor: '#181717',
+  emptyFillColor: '#181818',
+  isEmptyStroke: true,
+  emptyStrokeColor: '#181818',
+  emptyStrokeWidth: 0.1,
 
   // Snake
   snakeFillColor: '#0b401b',
-  snakeStrokeColor: '#0b180f',
+  isSnakeStroke: true,
+  snakeStrokeColor: '#000000',
+  snakeStrokeWidth: 0.3,
 
   // Apple
   appleFillColor: '#4a0c0c',
-  appleStrokeColor: '#110707',
+  isAppleStroke: true,
+  appleStrokeColor: '#000000',
+  appleStrokeWidth: 0.3,
 
   // Other
   godMode: false,
-  speed: 1
+  snakeSpeed: 3,
+  boardSize: 25
 };
 
 function Plan (width, heigth) {
@@ -52,7 +61,7 @@ function Plan (width, heigth) {
   return space;
 }
 
-const plan = Plan(25, 25);
+const plan = Plan(guiObj.boardSize, guiObj.boardSize);
 
 function Level (plan) {
   this.gameStatus = false;
@@ -206,8 +215,8 @@ this.addEventListener('keydown', function (event) {
         level.snake.gameStatus = true;
         this.timer = this.setTimeout(function run () {
           level.snake.move();
-          this.timer = this.setTimeout(run, 250 / (guiObj.speed));
-        }, 250 / (guiObj.speed));
+          this.timer = this.setTimeout(run, 250 / (guiObj.snakeSpeed));
+        }, 250 / (guiObj.snakeSpeed));
         break;
       };
     case (27):
@@ -218,7 +227,7 @@ this.addEventListener('keydown', function (event) {
 });
 
 function displayCanvas () {
-  const cellSize = 20;
+  const cellSize = 500 / guiObj.boardSize;
   var canvas = document.querySelector('canvas');
   canvas.setAttribute('width', '500');
   canvas.setAttribute('height', '500');
@@ -230,9 +239,9 @@ function displayCanvas () {
     cx.fillRect(x * size, y * size, size - 1, size - 1);
   }
 
-  function drawStroke (x, y, size, color) {
+  function drawStroke (x, y, size, color, px) {
     cx.strokeStyle = color;
-    cx.lineWidth = 1;
+    cx.lineWidth = px;
     cx.strokeRect(x * size, y * size, size - 1, size - 1);
   }
 
@@ -241,22 +250,30 @@ function displayCanvas () {
     gradient.addColorStop(0, guiObj.wallGradientColor1);
     gradient.addColorStop(1, guiObj.wallGradientColor2);
     drawRect(x, y, cellSize, gradient);
-    drawStroke(x, y, cellSize, guiObj.wallStrokeColor);
+    if (guiObj.isWallStroke) {
+      drawStroke(x, y, cellSize, guiObj.wallStrokeColor, guiObj.wallStrokeWidth);
+    }
   }
 
   function drawSnake (x, y) {
     drawRect(x, y, cellSize, guiObj.snakeFillColor);
-    drawStroke(x, y, cellSize, guiObj.snakeStrokeColor);
+    if (guiObj.isSnakeStroke) {
+      drawStroke(x, y, cellSize, guiObj.snakeStrokeColor, guiObj.snakeStrokeWidth);
+    }
   }
 
   function drawApple (x, y) {
     drawRect(x, y, cellSize, guiObj.appleFillColor);
-    drawStroke(x, y, cellSize, guiObj.appleStrokeColor);
+    if (guiObj.isAppleStroke) {
+      drawStroke(x, y, cellSize, guiObj.appleStrokeColor, guiObj.appleStrokeWidth);
+    }
   }
 
   function drawEmptySpace (x, y) {
     drawRect(x, y, cellSize, guiObj.emptyFillColor);
-    drawStroke(x, y, cellSize, guiObj.emptyStrokeColor);
+    if (guiObj.isEmptyStroke) {
+      drawStroke(x, y, cellSize, guiObj.emptyStrokeColor, guiObj.emptyStrokeWidth);
+    }
   }
 
   for (let y = 0; y < level.heigth; y++) {
@@ -281,4 +298,4 @@ function displayCanvas () {
     }
   }
 }
- 
+
