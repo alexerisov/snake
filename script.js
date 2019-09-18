@@ -18,7 +18,8 @@ var guiObj = {
   appleStrokeColor: '#110707',
 
   // Other
-  godMode: false
+  godMode: false,
+  speed: 1
 };
 
 function Plan (width, heigth) {
@@ -54,6 +55,7 @@ function Plan (width, heigth) {
 const plan = Plan(25, 25);
 
 function Level (plan) {
+  this.gameStatus = false;
   this.grid = new Array(plan.length);
   this.width = plan[0].length;
   this.heigth = plan.length;
@@ -118,6 +120,8 @@ function Snake () {
 }
 
 Snake.prototype.move = function () {
+  this.speed = 250;
+
   const target = level.grid[this.body[0].y + this.direction.y][this.body[0].x + this.direction.x];
   const targetX = this.body[0].x + this.direction.x;
   const targetY = this.body[0].y + this.direction.y;
@@ -130,33 +134,29 @@ Snake.prototype.move = function () {
       y: targetY
     });
     if (target === 'apple') {
-      this.body.push(level.grid[lastElement.y - this.direction.y][lastElement.x - this.direction.x])
+      this.body.push(level.grid[lastElement.y - this.direction.y][lastElement.x - this.direction.x]);
       level.apples.spawn();
     }
     level.grid[lastElement.y][lastElement.x] = 'empty';
     this.body.pop();
-    
   } else if (guiObj.godMode === true) {
-    //do something in godMode
+    // do something in godMode
+  } else {
+    level = new Level(plan);
   }
-  else
-  level = new Level(plan);
 };
 
 Snake.prototype.turn = function (direction) {
-  switch (direction) {
-    case ('up'):
-      this.direction = directionNames.up;
-      break;
-    case ('down'):
-      this.direction = directionNames.down;
-      break;
-    case ('left'):
-      this.direction = directionNames.left;
-      break;
-    case ('right'):
-      this.direction = directionNames.right;
-      break;
+  // checking the REVERSE direction
+  if (this.direction.y === -directionNames[direction].y &&
+    this.direction.x === -directionNames[direction].x) {
+    false;
+  }
+  // checking the FORWARD direction (for speed-up)
+  else if (this.direction === directionNames[`${direction}`]) {
+    false;
+  } else {
+    this.direction = directionNames[`${direction}`];
   }
 };
 
@@ -165,18 +165,18 @@ function Apple () {
 }
 
 Apple.prototype.spawn = function () {
-  function getRandomInt(min, max) {
+  function getRandomInt (min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min;
   }
-  let targetX = getRandomInt(1, level.width - 1);
-  let targetY = getRandomInt(1, level.heigth - 1);
-  let target = level.grid[targetY][targetX];
-  if (target === 'empty')
-   level.grid[targetY][targetX] = 'apple';
-  else level.apples.spawn();
-}
+  const targetX = getRandomInt(1, level.width - 1);
+  const targetY = getRandomInt(1, level.heigth - 1);
+  const target = level.grid[targetY][targetX];
+  if (target === 'empty') {
+    level.grid[targetY][targetX] = 'apple';
+  } else level.apples.spawn();
+};
 
 const arrowCodes = {
   37: 'left',
@@ -200,12 +200,18 @@ this.addEventListener('keydown', function (event) {
       level.snake.turn('down');
       break;
     case (13):
-      let timer = this.setInterval(function () {
-        level.snake.move();
-      }, 250);
-      break;
+      if (level.snake.gameStatus === true) {
+        break;
+      } else {
+        level.snake.gameStatus = true;
+        this.timer = this.setTimeout(function run () {
+          level.snake.move();
+          this.timer = this.setTimeout(run, 250 / (guiObj.speed));
+        }, 250 / (guiObj.speed));
+        break;
+      };
     case (27):
-      this.clearInterval(timer);
+      this.clearTimeout(this.timer);
       level = new Level(plan);
       break;
   }
@@ -275,3 +281,4 @@ function displayCanvas () {
     }
   }
 }
+ 
