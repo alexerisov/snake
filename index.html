@@ -20,7 +20,8 @@
                 let f1 = gui.addFolder('Settings');
                     f1.add(guiObj, 'godMode'); 
                     f1.add(guiObj, 'snakeSpeed').min(1).max(4).step(1);
-
+                    f1.add(guiObj, 'game', [ 'menu', 'game', 'pause' ] );
+                    
                 let f2 = gui.addFolder('Wall');
                     f2.addColor(guiObj, 'wallGradientColor1');
                     f2.addColor(guiObj, 'wallGradientColor2');
