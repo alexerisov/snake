@@ -9,8 +9,8 @@ var guiObj = {
 
   //  Empty
   emptyFillColor: '#181818',
-  isEmptyStroke: true,
-  emptyStrokeColor: '#181818',
+  isEmptyStroke: false,
+  emptyStrokeColor: '#e6e6e6',
   emptyStrokeWidth: 0.1,
 
   // Snake
@@ -25,10 +25,22 @@ var guiObj = {
   appleStrokeColor: '#000000',
   appleStrokeWidth: 0.3,
 
+  // Pause
+  rectHeigth: 140,
+  rectWidth: 349,
+  rectColor: 'rgba(95,93,93,0.5)',
+  rectStrokeWidth: 3.7,
+  rectStrokeColor: '#000000',
+  textSize: 90,
+  textFont: 'Helvetica',
+  textColor: '#777777',
+
   // Other
   godMode: false,
   snakeSpeed: 3,
-  boardSize: 25
+  boardSize: 25,
+  pause: true,
+  game: 'game'
 };
 
 function Plan (width, heigth) {
@@ -64,7 +76,6 @@ function Plan (width, heigth) {
 const plan = Plan(guiObj.boardSize, guiObj.boardSize);
 
 function Level (plan) {
-  this.gameStatus = false;
   this.grid = new Array(plan.length);
   this.width = plan[0].length;
   this.heigth = plan.length;
@@ -169,6 +180,17 @@ Snake.prototype.turn = function (direction) {
   }
 };
 
+Snake.prototype.loop = function () {
+  window.timer = setTimeout(function run () {
+    level.snake.move();
+    window.timer = setTimeout(run, 250 / (guiObj.snakeSpeed));
+  }, 250 / (guiObj.snakeSpeed));
+};
+
+Snake.prototype.loopStop = function () {
+  clearTimeout(window.timer);
+};
+
 function Apple () {
   this.array = [];
 }
@@ -196,32 +218,34 @@ const arrowCodes = {
 
 this.addEventListener('keydown', function (event) {
   switch (event.which) {
-    case (37):
+    case (37): // LEFT arrow
       level.snake.turn('left');
       break;
-    case (38):
+    case (38): // UP arrow
       level.snake.turn('up');
       break;
-    case (39):
+    case (39): // RIGHT arrow
       level.snake.turn('right');
       break;
-    case (40):
+    case (40): // DOWN arrow
       level.snake.turn('down');
       break;
-    case (13):
-      if (level.snake.gameStatus === true) {
-        break;
+    case (13): // ENTER
+      if (guiObj.pause === false) {
+
       } else {
-        level.snake.gameStatus = true;
-        this.timer = this.setTimeout(function run () {
-          level.snake.move();
-          this.timer = this.setTimeout(run, 250 / (guiObj.snakeSpeed));
-        }, 250 / (guiObj.snakeSpeed));
-        break;
-      };
-    case (27):
-      this.clearTimeout(this.timer);
-      level = new Level(plan);
+        level.snake.loop();
+        guiObj.pause = false;
+      }
+      break;
+    case (27): // ESC
+      if (guiObj.pause === false) {
+        level.snake.loopStop();
+        guiObj.pause = true;
+      } else {
+        level.snake.loop();
+        guiObj.pause = false;
+      }
       break;
   }
 });
@@ -234,68 +258,127 @@ function displayCanvas () {
 
   const cx = canvas.getContext('2d');
 
-  function drawRect (x, y, size, color) {
+  function drawRect (x, y, width, heigth, color) {
     cx.fillStyle = color;
-    cx.fillRect(x * size, y * size, size - 1, size - 1);
+    cx.fillRect(x, y, width, heigth);
   }
 
-  function drawStroke (x, y, size, color, px) {
+  function drawStroke (x, y, width, heigth, color, px) {
     cx.strokeStyle = color;
     cx.lineWidth = px;
-    cx.strokeRect(x * size, y * size, size - 1, size - 1);
+    cx.strokeRect(x, y, width, heigth);
   }
 
-  function drawWall (x, y) {
-    const gradient = cx.createLinearGradient(x * cellSize, y * cellSize, (x + 1) * cellSize, (y + 1) * cellSize);
-    gradient.addColorStop(0, guiObj.wallGradientColor1);
-    gradient.addColorStop(1, guiObj.wallGradientColor2);
-    drawRect(x, y, cellSize, gradient);
-    if (guiObj.isWallStroke) {
-      drawStroke(x, y, cellSize, guiObj.wallStrokeColor, guiObj.wallStrokeWidth);
+  function drawText (text, x, y, size, font, color, maxWidth) {
+    if (maxWidth === undefined) {
+    } else {
+      this.maxWidth = maxWidth;
     }
+    cx.textAlign = 'center';
+    cx.textBaseline = 'middle';
+    cx.fillStyle = color;
+    cx.font = `${size}px ${font}`;
+    cx.fillText(text, x, y, this.maxWidth);
   }
 
-  function drawSnake (x, y) {
-    drawRect(x, y, cellSize, guiObj.snakeFillColor);
-    if (guiObj.isSnakeStroke) {
-      drawStroke(x, y, cellSize, guiObj.snakeStrokeColor, guiObj.snakeStrokeWidth);
+  function drawGame () {
+    function drawCell (x, y, color, size) {
+      if (size === undefined) {
+        this.size = cellSize;
+      } else {
+        this.size = size;
+      }
+      drawRect(x * this.size, y * this.size, this.size, this.size, color);
     }
-  }
 
-  function drawApple (x, y) {
-    drawRect(x, y, cellSize, guiObj.appleFillColor);
-    if (guiObj.isAppleStroke) {
-      drawStroke(x, y, cellSize, guiObj.appleStrokeColor, guiObj.appleStrokeWidth);
+    function drawCellStroke (x, y, color, px, size) {
+      if (size === undefined) {
+        this.size = cellSize;
+      } else {
+        this.size = size;
+      }
+      drawStroke(x * this.size, y * this.size, this.size, this.size, color, px);
     }
-  }
 
-  function drawEmptySpace (x, y) {
-    drawRect(x, y, cellSize, guiObj.emptyFillColor);
-    if (guiObj.isEmptyStroke) {
-      drawStroke(x, y, cellSize, guiObj.emptyStrokeColor, guiObj.emptyStrokeWidth);
+    function drawWall (x, y) {
+      const gradient = cx.createLinearGradient(x * cellSize, y * cellSize, (x + 1) * cellSize, (y + 1) * cellSize);
+      gradient.addColorStop(0, guiObj.wallGradientColor1);
+      gradient.addColorStop(1, guiObj.wallGradientColor2);
+      drawCell(x, y, gradient);
+      if (guiObj.isWallStroke) {
+        drawCellStroke(x, y, guiObj.wallStrokeColor, guiObj.wallStrokeWidth);
+      }
     }
-  }
 
-  for (let y = 0; y < level.heigth; y++) {
-    const line = level.grid[y];
-    for (let x = 0; x < level.width; x++) {
-      const element = line[x];
+    function drawSnake (x, y) {
+      drawCell(x, y, guiObj.snakeFillColor);
+      if (guiObj.isSnakeStroke) {
+        drawCellStroke(x, y, guiObj.snakeStrokeColor, guiObj.snakeStrokeWidth);
+      }
+    }
 
-      switch (element) {
-        case 'wall':
-          drawWall(x, y);
-          break;
-        case 'snake':
-          drawSnake(x, y);
-          break;
-        case 'apple':
-          drawApple(x, y);
-          break;
-        case 'empty':
-          drawEmptySpace(x, y);
-          break;
+    function drawApple (x, y) {
+      drawCell(x, y, guiObj.appleFillColor);
+      if (guiObj.isAppleStroke) {
+        drawCellStroke(x, y, guiObj.appleStrokeColor, guiObj.appleStrokeWidth);
+      }
+    }
+
+    function drawEmptySpace (x, y) {
+      drawCell(x, y, guiObj.emptyFillColor);
+      if (guiObj.isEmptyStroke) {
+        drawCellStroke(x, y, guiObj.emptyStrokeColor, guiObj.emptyStrokeWidth);
+      }
+    }
+
+    for (let y = 0; y < level.heigth; y++) {
+      const line = level.grid[y];
+      for (let x = 0; x < level.width; x++) {
+        const element = line[x];
+        switch (element) {
+          case 'wall':
+            drawWall(x, y);
+            break;
+          case 'snake':
+            drawSnake(x, y);
+            break;
+          case 'apple':
+            drawApple(x, y);
+            break;
+          case 'empty':
+            drawEmptySpace(x, y);
+            break;
+        }
       }
     }
   }
-}
 
+  function drawMenu () {
+    drawRect(0, 0, 500, 500, '#ffffff');
+  }
+
+  function drawPause () {
+    let width = guiObj.rectWidth;
+    let heigth = guiObj.rectHeigth;
+    const posX = 250 - width / 2;
+    const posY = 250 - heigth / 2;
+    let fontSize = guiObj.textSize;
+
+    // drawRect(0, 0, 500, 500, 'rgba(40, 40, 40, 0.5)')
+    drawRect(posX, posY, width, heigth, guiObj.rectColor);
+    drawStroke(posX, posY, width, heigth, guiObj.rectStrokeColor, guiObj.rectStrokeWidth);
+    drawText('PAUSE', 250, 250, fontSize, guiObj.textFont, guiObj.textColor);
+  }
+
+  switch (guiObj.game) {
+    case 'menu':
+      drawMenu();
+      break;
+    case 'game':
+      drawGame();
+      if (guiObj.pause === true) {
+        drawPause();
+      }
+      break;
+  }
+}
