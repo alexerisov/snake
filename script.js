@@ -147,7 +147,7 @@ Snake.prototype.move = function () {
   const targetY = this.body[0].y + this.direction.y;
   const lastElement = this.body[this.body.length - 1];
 
-  if (target != 'wall' && target != 'snake') {
+  if (target !== 'wall' && target !== 'snake') {
     level.grid[targetY][targetX] = 'snake';
     this.body.unshift({
       x: targetX,
@@ -159,6 +159,7 @@ Snake.prototype.move = function () {
     }
     level.grid[lastElement.y][lastElement.x] = 'empty';
     this.body.pop();
+    this.canTurn = true;
   } else if (guiObj.godMode === true) {
     // do something in godMode
   } else {
@@ -167,16 +168,19 @@ Snake.prototype.move = function () {
 };
 
 Snake.prototype.turn = function (direction) {
-  // checking the REVERSE direction
-  if (this.direction.y === -directionNames[direction].y &&
-    this.direction.x === -directionNames[direction].x) {
-    false;
-  }
-  // checking the FORWARD direction (for speed-up)
-  else if (this.direction === directionNames[`${direction}`]) {
-    false;
-  } else {
-    this.direction = directionNames[`${direction}`];
+  if (this.canTurn) {
+    // checking the REVERSE direction
+    if (this.direction.y === -directionNames[direction].y &&
+      this.direction.x === -directionNames[direction].x) {
+      false;
+    }
+    // checking the FORWARD direction (for speed-up)
+    else if (this.direction === directionNames[`${direction}`]) {
+      false;
+    } else {
+      this.direction = directionNames[`${direction}`];
+      this.canTurn = false;
+    }
   }
 };
 
@@ -358,11 +362,11 @@ function displayCanvas () {
   }
 
   function drawPause () {
-    let width = guiObj.rectWidth;
-    let heigth = guiObj.rectHeigth;
+    const width = guiObj.rectWidth;
+    const heigth = guiObj.rectHeigth;
     const posX = 250 - width / 2;
     const posY = 250 - heigth / 2;
-    let fontSize = guiObj.textSize;
+    const fontSize = guiObj.textSize;
 
     // drawRect(0, 0, 500, 500, 'rgba(40, 40, 40, 0.5)')
     drawRect(posX, posY, width, heigth, guiObj.rectColor);
