@@ -53,6 +53,7 @@ const guiObj = {
     rectHeight: 85,
     rectWidth: 375,
     rectColor: 'rgba(95,93,93,0.5)',
+    chosenRectColor: 'rgba(80,80,173,0.5)',
     rectStrokeWidth: 0.1,
     rectStrokeColor: '#3b3b3b',
     textSize: 60,
@@ -66,6 +67,7 @@ const guiObj = {
     rectHeight: 85,
     rectWidth: 375,
     rectColor: 'rgba(95,93,93,0.5)',
+    chosenRectColor: 'rgba(80,80,173,0.5)',
     rectStrokeWidth: 0.1,
     rectStrokeColor: '#3b3b3b',
     textSize: 60,
@@ -77,7 +79,7 @@ const guiObj = {
     godMode: false,
     boardSize: 25,
     pause: true,
-    game: 'game'
+    game: 'menu'
   }
 };
 
@@ -182,7 +184,7 @@ class Snake {
 
       if (target.type === 'apple') {
         this.body.push(new Cell(tail.x - this.direction.x, tail.y - this.direction.y, 'snake'));
-        Apple.spawn();
+        level.apple.spawn();
       }
       this.grid.set(tail.x, tail.y, 'empty');
       this.body.pop();
@@ -250,7 +252,7 @@ class Level {
     this.height = plan.length;
     this.grid = new Grid(this.width, this.height);
     this.snake = new Snake(this.grid);
-    this.apples = new Apple(this.grid);
+    this.apple = new Apple(this.grid);
 
     for (let y = 0; y < this.height; y++) {
       const line = plan[y];
@@ -265,7 +267,7 @@ class Level {
 
           case (ch === '@'):
             chType = 'apple';
-            this.apples.array.unshift(new Cell(x, y, chType));
+            this.apple.array.unshift(new Cell(x, y, chType));
             break;
 
           case (ch === 's'):
@@ -290,20 +292,46 @@ class Menu {
     this.list = [{
       name: 'Start',
       link: guiObj.menuStart,
-      isChosen: true
+      isChosen: true,
+      action () {guiObj.other.game = 'game'}
     },
       {
         name: 'Quit',
         link: guiObj.menuQuit,
-        isChosen: false
+        isChosen: false,
+        action () {window.close()}
       }
     ];
   }
 
-  scroll = function (direction) {
+  scroll (direction) {
+    let next;
+    let current = this.list.filter(item => item.isChosen)[0];
+    let currentIndex = this.list.indexOf(current);
 
+      switch (direction) {
+      case 'up':
+        if (0 <= currentIndex - 1) {
+          next = this.list[currentIndex - 1];
+          next.isChosen = true;
+          current.isChosen = false;
+        }
+        break;
+
+      case 'down':
+        if (currentIndex + 1 <= this.list.length - 1) {
+          next = this.list[currentIndex + 1];
+          next.isChosen = true;
+          current.isChosen = false;
+        }
+        break;
+    }
   };
 
+  select () {
+    let current = this.list.filter(item => item.isChosen)[0];
+    current.action();
+  }
 }
 
 
@@ -338,11 +366,15 @@ addEventListener('keydown', function (event) {
       }
       break;
     case (13): // ENTER
-      if (guiObj.other.pause === false) {
-
+      if (guiObj.other.game === 'menu') {
+        menu.select();
       } else {
-        level.snake.loop();
-        guiObj.other.pause = false;
+        if (guiObj.other.pause === false) {
+
+        } else {
+          level.snake.loop();
+          guiObj.other.pause = false;
+        }
       }
       break;
     case (27): // ESC
@@ -455,10 +487,12 @@ function displayCanvas () {
       const link = element.link;
       const x = 250 - link.rectWidth / 2;
       const y = link.posY - link.rectHeight / 2;
-      drawRect(x, y, link.rectWidth, link.rectHeight, link.rectColor);
+      let color = element.isChosen ? link.chosenRectColor : link.rectColor;
+      drawRect(x, y, link.rectWidth, link.rectHeight, color);
       drawStroke(x, y, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
       drawText(element.name, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
     }
+
     drawRect(0, 0, 500, 500, guiObj.menu.rectColor);
     drawStroke(0, 0, 500, 500, guiObj.menu.rectStrokeColor, guiObj.menu.rectStrokeWidth);
 
