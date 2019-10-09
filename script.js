@@ -1,119 +1,87 @@
-var guiObj = {
+const guiObj = {
 
-  // Wall
-  wallGradientColor1: '#323232',
-  wallGradientColor2: '#232323',
-  isWallStroke: false,
-  wallStrokeColor: '#232323',
-  wallStrokeWidth: 0.1,
+  wall: {
+    gradientColor1: '#323232',
+    gradientColor2: '#232323',
+    stroke: false,
+    strokeColor: '#232323',
+    strokeWidth: 0.1
+  },
 
-  //  Empty
-  emptyFillColor: '#181818',
-  isEmptyStroke: false,
-  emptyStrokeColor: '#e6e6e6',
-  emptyStrokeWidth: 0.1,
+  empty: {
+    fillColor: '#181818',
+    stroke: false,
+    strokeColor: '#e6e6e6',
+    strokeWidth: 0.1
+  },
 
-  // Snake
-  snakeFillColor: '#0b401b',
-  isSnakeStroke: true,
-  snakeStrokeColor: '#000000',
-  snakeStrokeWidth: 0.3,
+  snake: {
+    speed: 3,
+    fillColor: '#0b401b',
+    stroke: true,
+    strokeColor: '#000000',
+    strokeWidth: 0.3
+  },
 
-  // Apple
-  appleFillColor: '#4a0c0c',
-  isAppleStroke: true,
-  appleStrokeColor: '#000000',
-  appleStrokeWidth: 0.3,
+  apple: {
+    fillColor: '#4a0c0c',
+    stroke: true,
+    strokeColor: '#000000',
+    strokeWidth: 0.3
+  },
 
-  // Pause
-  rectHeigth: 140,
-  rectWidth: 349,
-  rectColor: 'rgba(95,93,93,0.5)',
-  rectStrokeWidth: 3.7,
-  rectStrokeColor: '#000000',
-  textSize: 90,
-  textFont: 'Helvetica',
-  textColor: '#777777',
+  pause: {
+    rectHeight: 140,
+    rectWidth: 349,
+    rectColor: 'rgba(95,93,93,0.5)',
+    rectStrokeWidth: 3.7,
+    rectStrokeColor: '#000000',
+    textSize: 90,
+    textFont: 'Helvetica',
+    textColor: '#777777'
+  },
 
-  // Other
-  godMode: false,
-  snakeSpeed: 3,
-  boardSize: 25,
-  pause: true,
-  game: 'game'
+  menu: {
+    rectColor: '#181818',
+    rectStrokeWidth: 50,
+    rectStrokeColor: '#3b3b3b'
+  },
+
+  menuStart: {
+    posX: 250,
+    posY: 300,
+    rectHeight: 85,
+    rectWidth: 375,
+    rectColor: 'rgba(95,93,93,0.5)',
+    rectStrokeWidth: 0.1,
+    rectStrokeColor: '#3b3b3b',
+    textSize: 60,
+    textFont: 'Helvetica',
+    textColor: '#777777'
+  },
+
+  menuQuit: {
+    posX: 250,
+    posY: 400,
+    rectHeight: 85,
+    rectWidth: 375,
+    rectColor: 'rgba(95,93,93,0.5)',
+    rectStrokeWidth: 0.1,
+    rectStrokeColor: '#3b3b3b',
+    textSize: 60,
+    textFont: 'Helvetica',
+    textColor: '#777777'
+  },
+
+  other: {
+    godMode: false,
+    boardSize: 25,
+    pause: true,
+    game: 'game'
+  }
 };
 
-function Plan (width, heigth) {
-  const space = new Array(heigth);
-  this.width = width;
-  this.heigth = heigth;
-  for (let y = 0; y < heigth; y++) {
-    let line = '';
-    for (let x = 0; x < width; x++) {
-      switch (true) {
-        case (x === 0 || x === width - 1):
-          line += '#';
-          break;
-        case (y === 0 || y === heigth - 1):
-          line += '#';
-          break;
-        case ((x === 3 && y === 3) || (x === 4 && y === 3) || (x === 5 && y === 3)):
-          line += 's';
-          break;
-        case (x === 13 && y === 13):
-          line += '@';
-          break;
-        default:
-          line += ' ';
-          break;
-      }
-      space[y] = line;
-    }
-  }
-  return space;
-}
-
-const plan = Plan(guiObj.boardSize, guiObj.boardSize);
-
-function Level (plan) {
-  this.grid = new Array(plan.length);
-  this.width = plan[0].length;
-  this.heigth = plan.length;
-  this.snake = new Snake();
-  this.apples = new Apple();
-
-  for (let y = 0; y < this.heigth; y++) {
-    const line = plan[y];
-    this.grid[y] = [];
-    for (let x = 0; x < this.width; x++) {
-      const ch = line[x];
-      switch (true) {
-        case (ch === '#'):
-          this.grid[y].push('wall');
-          break;
-        case (ch === '@'):
-          this.grid[y].push('apple');
-          this.apples.array.push({
-            x: x,
-            y: y
-          });
-          break;
-        case (ch === 's'):
-          this.grid[y].push('snake');
-          this.snake.body.unshift({
-            x: x,
-            y: y
-          });
-          break;
-        default:
-          this.grid[y].push('empty');
-          break;
-      }
-    }
-  }
-}
-
-var directionNames = {
+const directionNames = {
   up: {
     x: 0,
     y: -1
@@ -132,87 +100,214 @@ var directionNames = {
   }
 };
 
+function Plan (width, height) {
+  const space = new Array(height);
+  this.width = width;
+  this.height = height;
+  for (let y = 0; y < height; y++) {
+    let line = '';
+    for (let x = 0; x < width; x++) {
+      switch (true) {
+        case (x === 0 || x === width - 1):
+          line += '#';
+          break;
+        case (y === 0 || y === height - 1):
+          line += '#';
+          break;
+        case ((x === 3 && y === 3) || (x === 4 && y === 3) || (x === 5 && y === 3)):
+          line += 's';
+          break;
+        case (x === 13 && y === 13):
+          line += '@';
+          break;
+        default:
+          line += ' ';
+          break;
+      }
+      space[y] = line;
+    }
+  }
+  return space;
+}
+
+let plan;
+plan = new Plan(guiObj.other.boardSize, guiObj.other.boardSize);
+
+class Vector {
+  constructor (x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class Cell {
+  constructor (x, y, type) {
+    this.x = x;
+    this.y = y;
+    this.type = type;
+  }
+}
+
+class Grid {
+  constructor (width, height) {
+    this.width = width;
+    this.height = height;
+    this.space = new Array(width * height);
+  }
+
+  get (x, y) {
+    return this.space[x + (y * this.width)];
+  }
+
+  set (x, y, value) {
+    this.space[x + (y * this.width)] = new Cell(x, y, value);
+  }
+}
+
+class Snake {
+  constructor (grid) {
+    this.grid = grid;
+    this.body = [];
+    this.direction = directionNames.right;
+  }
+
+  move () {
+    this.speed = 250;
+    const target = this.grid.get(this.body[0].x + this.direction.x, this.body[0].y + this.direction.y);
+    const tail = this.body[this.body.length - 1];
+
+    if (target.type !== 'wall' && target.type !== 'snake') {
+      this.grid.set(target.x, target.y, 'snake');
+      this.body.unshift(new Cell(target.x, target.y, 'snake'));
+
+      if (target.type === 'apple') {
+        this.body.push(new Cell(tail.x - this.direction.x, tail.y - this.direction.y, 'snake'));
+        Apple.spawn();
+      }
+      this.grid.set(tail.x, tail.y, 'empty');
+      this.body.pop();
+      this.canTurn = true;
+    } else if (guiObj.other.godMode === true) {
+      // do something in godMode
+    } else {
+      level = new Level(plan);
+    }
+  }
+
+  turn (direction) {
+    if (this.canTurn) {
+      // checking the REVERSE direction
+      if (this.direction.y === -directionNames[direction].y &&
+        this.direction.x === -directionNames[direction].x) {
+
+      }
+      // checking the FORWARD direction (for speed-up)
+      else if (this.direction === directionNames[`${direction}`]) {
+
+      } else {
+        this.direction = directionNames[`${direction}`];
+        this.canTurn = false;
+      }
+    }
+  }
+
+  loop () {
+    window.timer = setTimeout(function run () {
+      level.snake.move();
+      window.timer = setTimeout(run, 250 / (guiObj.snake.speed));
+    }, 250 / (guiObj.snake.speed));
+  }
+
+  loopStop () {
+    clearTimeout(window.timer);
+  }
+}
+
+class Apple {
+  constructor (grid) {
+    this.grid = grid;
+    this.array = [];
+  }
+
+  spawn () {
+    function getRandomInt (min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+    const targetX = getRandomInt(1, level.width - 1);
+    const targetY = getRandomInt(1, level.height - 1);
+    const target = this.grid.get(targetX, targetY);
+    if (target.type === 'empty') {
+      this.grid.set(targetX, targetY, 'apple');
+    } else { this.spawn(); }
+  }
+}
+
+class Level {
+  constructor (plan) {
+    this.width = plan[0].length;
+    this.height = plan.length;
+    this.grid = new Grid(this.width, this.height);
+    this.snake = new Snake(this.grid);
+    this.apples = new Apple(this.grid);
+
+    for (let y = 0; y < this.height; y++) {
+      const line = plan[y];
+      for (let x = 0; x < this.width; x++) {
+        const ch = line[x];
+        let chType = 'empty';
+
+        switch (true) {
+          case (ch === '#'):
+            chType = 'wall';
+            break;
+
+          case (ch === '@'):
+            chType = 'apple';
+            this.apples.array.unshift(new Cell(x, y, chType));
+            break;
+
+          case (ch === 's'):
+            chType = 'snake';
+            this.snake.body.unshift(new Cell(x, y, chType));
+            break;
+
+          default:
+            chType = 'empty';
+            break;
+        }
+        this.grid.set(x, y, chType);
+      }
+    }
+  }
+}
+
 let level = new Level(plan);
 
-function Snake () {
-  this.body = [];
-  this.direction = directionNames.right;
+class Menu {
+  constructor() {
+    this.list = [{
+      name: 'Start',
+      link: guiObj.menuStart,
+      isChosen: true
+    },
+      {
+        name: 'Quit',
+        link: guiObj.menuQuit,
+        isChosen: false
+      }
+    ];
+  }
+
+  scroll = function (direction) {
+
+  };
+
 }
 
-Snake.prototype.move = function () {
-  this.speed = 250;
 
-  const target = level.grid[this.body[0].y + this.direction.y][this.body[0].x + this.direction.x];
-  const targetX = this.body[0].x + this.direction.x;
-  const targetY = this.body[0].y + this.direction.y;
-  const lastElement = this.body[this.body.length - 1];
-
-  if (target !== 'wall' && target !== 'snake') {
-    level.grid[targetY][targetX] = 'snake';
-    this.body.unshift({
-      x: targetX,
-      y: targetY
-    });
-    if (target === 'apple') {
-      this.body.push(level.grid[lastElement.y - this.direction.y][lastElement.x - this.direction.x]);
-      level.apples.spawn();
-    }
-    level.grid[lastElement.y][lastElement.x] = 'empty';
-    this.body.pop();
-    this.canTurn = true;
-  } else if (guiObj.godMode === true) {
-    // do something in godMode
-  } else {
-    level = new Level(plan);
-  }
-};
-
-Snake.prototype.turn = function (direction) {
-  if (this.canTurn) {
-    // checking the REVERSE direction
-    if (this.direction.y === -directionNames[direction].y &&
-      this.direction.x === -directionNames[direction].x) {
-      false;
-    }
-    // checking the FORWARD direction (for speed-up)
-    else if (this.direction === directionNames[`${direction}`]) {
-      false;
-    } else {
-      this.direction = directionNames[`${direction}`];
-      this.canTurn = false;
-    }
-  }
-};
-
-Snake.prototype.loop = function () {
-  window.timer = setTimeout(function run () {
-    level.snake.move();
-    window.timer = setTimeout(run, 250 / (guiObj.snakeSpeed));
-  }, 250 / (guiObj.snakeSpeed));
-};
-
-Snake.prototype.loopStop = function () {
-  clearTimeout(window.timer);
-};
-
-function Apple () {
-  this.array = [];
-}
-
-Apple.prototype.spawn = function () {
-  function getRandomInt (min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-  }
-  const targetX = getRandomInt(1, level.width - 1);
-  const targetY = getRandomInt(1, level.heigth - 1);
-  const target = level.grid[targetY][targetX];
-  if (target === 'empty') {
-    level.grid[targetY][targetX] = 'apple';
-  } else level.apples.spawn();
-};
-
+const menu = new Menu();
 const arrowCodes = {
   37: 'left',
   38: 'up',
@@ -220,57 +315,65 @@ const arrowCodes = {
   40: 'down'
 };
 
-this.addEventListener('keydown', function (event) {
+addEventListener('keydown', function (event) {
   switch (event.which) {
     case (37): // LEFT arrow
       level.snake.turn('left');
       break;
     case (38): // UP arrow
-      level.snake.turn('up');
+      if (guiObj.other.game === 'game') {
+        level.snake.turn('up');
+      } else {
+        menu.scroll('up');
+      }
       break;
     case (39): // RIGHT arrow
       level.snake.turn('right');
       break;
     case (40): // DOWN arrow
-      level.snake.turn('down');
+      if (guiObj.other.game === 'game') {
+        level.snake.turn('down');
+      } else {
+        menu.scroll('down');
+      }
       break;
     case (13): // ENTER
-      if (guiObj.pause === false) {
+      if (guiObj.other.pause === false) {
 
       } else {
         level.snake.loop();
-        guiObj.pause = false;
+        guiObj.other.pause = false;
       }
       break;
     case (27): // ESC
-      if (guiObj.pause === false) {
+      if (guiObj.other.pause === false) {
         level.snake.loopStop();
-        guiObj.pause = true;
+        guiObj.other.pause = true;
       } else {
         level.snake.loop();
-        guiObj.pause = false;
+        guiObj.other.pause = false;
       }
       break;
   }
 });
 
 function displayCanvas () {
-  const cellSize = 500 / guiObj.boardSize;
-  var canvas = document.querySelector('canvas');
+  const cellSize = 500 / guiObj.other.boardSize;
+  const canvas = document.querySelector('canvas');
   canvas.setAttribute('width', '500');
   canvas.setAttribute('height', '500');
 
   const cx = canvas.getContext('2d');
 
-  function drawRect (x, y, width, heigth, color) {
+  function drawRect (x, y, width, height, color) {
     cx.fillStyle = color;
-    cx.fillRect(x, y, width, heigth);
+    cx.fillRect(x, y, width, height);
   }
 
-  function drawStroke (x, y, width, heigth, color, px) {
+  function drawStroke (x, y, width, height, color, px) {
     cx.strokeStyle = color;
     cx.lineWidth = px;
-    cx.strokeRect(x, y, width, heigth);
+    cx.strokeRect(x, y, width, height);
   }
 
   function drawText (text, x, y, size, font, color, maxWidth) {
@@ -286,60 +389,51 @@ function displayCanvas () {
   }
 
   function drawGame () {
-    function drawCell (x, y, color, size) {
-      if (size === undefined) {
-        this.size = cellSize;
-      } else {
-        this.size = size;
-      }
+    function drawCell (x, y, color) {
+      this.size = cellSize;
       drawRect(x * this.size, y * this.size, this.size, this.size, color);
     }
 
-    function drawCellStroke (x, y, color, px, size) {
-      if (size === undefined) {
-        this.size = cellSize;
-      } else {
-        this.size = size;
-      }
+    function drawCellStroke (x, y, color, px) {
+      this.size = cellSize;
       drawStroke(x * this.size, y * this.size, this.size, this.size, color, px);
     }
 
     function drawWall (x, y) {
       const gradient = cx.createLinearGradient(x * cellSize, y * cellSize, (x + 1) * cellSize, (y + 1) * cellSize);
-      gradient.addColorStop(0, guiObj.wallGradientColor1);
-      gradient.addColorStop(1, guiObj.wallGradientColor2);
+      gradient.addColorStop(0, guiObj.wall.gradientColor1);
+      gradient.addColorStop(1, guiObj.wall.gradientColor2);
       drawCell(x, y, gradient);
-      if (guiObj.isWallStroke) {
-        drawCellStroke(x, y, guiObj.wallStrokeColor, guiObj.wallStrokeWidth);
+      if (guiObj.wall.stroke) {
+        drawCellStroke(x, y, guiObj.wall.strokeColor, guiObj.wall.strokeWidth);
       }
     }
 
     function drawSnake (x, y) {
-      drawCell(x, y, guiObj.snakeFillColor);
-      if (guiObj.isSnakeStroke) {
-        drawCellStroke(x, y, guiObj.snakeStrokeColor, guiObj.snakeStrokeWidth);
+      drawCell(x, y, guiObj.snake.fillColor);
+      if (guiObj.snake.stroke) {
+        drawCellStroke(x, y, guiObj.snake.strokeColor, guiObj.snake.strokeWidth);
       }
     }
 
     function drawApple (x, y) {
-      drawCell(x, y, guiObj.appleFillColor);
-      if (guiObj.isAppleStroke) {
-        drawCellStroke(x, y, guiObj.appleStrokeColor, guiObj.appleStrokeWidth);
+      drawCell(x, y, guiObj.apple.fillColor);
+      if (guiObj.apple.stroke) {
+        drawCellStroke(x, y, guiObj.apple.strokeColor, guiObj.apple.strokeWidth);
       }
     }
 
     function drawEmptySpace (x, y) {
-      drawCell(x, y, guiObj.emptyFillColor);
-      if (guiObj.isEmptyStroke) {
-        drawCellStroke(x, y, guiObj.emptyStrokeColor, guiObj.emptyStrokeWidth);
+      drawCell(x, y, guiObj.empty.fillColor);
+      if (guiObj.empty.stroke) {
+        drawCellStroke(x, y, guiObj.empty.strokeColor, guiObj.empty.strokeWidth);
       }
     }
 
-    for (let y = 0; y < level.heigth; y++) {
-      const line = level.grid[y];
+    for (let y = 0; y < level.height; y++) {
       for (let x = 0; x < level.width; x++) {
-        const element = line[x];
-        switch (element) {
+        const element = level.grid.get(x, y);
+        switch (element.type) {
           case 'wall':
             drawWall(x, y);
             break;
@@ -356,31 +450,40 @@ function displayCanvas () {
       }
     }
   }
-
   function drawMenu () {
-    drawRect(0, 0, 500, 500, '#ffffff');
+    function drawElement (element) {
+      const link = element.link;
+      const x = 250 - link.rectWidth / 2;
+      const y = link.posY - link.rectHeight / 2;
+      drawRect(x, y, link.rectWidth, link.rectHeight, link.rectColor);
+      drawStroke(x, y, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+      drawText(element.name, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
+    }
+    drawRect(0, 0, 500, 500, guiObj.menu.rectColor);
+    drawStroke(0, 0, 500, 500, guiObj.menu.rectStrokeColor, guiObj.menu.rectStrokeWidth);
+
+    for (let i = 0; i < menu.list.length; i++) {
+      const element = menu.list[i];
+      drawElement(element);
+    }
   }
 
   function drawPause () {
-    const width = guiObj.rectWidth;
-    const heigth = guiObj.rectHeigth;
-    const posX = 250 - width / 2;
-    const posY = 250 - heigth / 2;
-    const fontSize = guiObj.textSize;
-
-    // drawRect(0, 0, 500, 500, 'rgba(40, 40, 40, 0.5)')
-    drawRect(posX, posY, width, heigth, guiObj.rectColor);
-    drawStroke(posX, posY, width, heigth, guiObj.rectStrokeColor, guiObj.rectStrokeWidth);
-    drawText('PAUSE', 250, 250, fontSize, guiObj.textFont, guiObj.textColor);
+    const link = guiObj.pause;
+    const posX = 250 - link.rectWidth / 2;
+    const posY = 250 - link.rectHeight / 2;
+    drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
+    drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+    drawText('PAUSE', 250, 250, link.textSize, link.textFont, link.textColor);
   }
 
-  switch (guiObj.game) {
+  switch (guiObj.other.game) {
     case 'menu':
       drawMenu();
       break;
     case 'game':
       drawGame();
-      if (guiObj.pause === true) {
+      if (guiObj.other.pause === true) {
         drawPause();
       }
       break;
