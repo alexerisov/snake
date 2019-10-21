@@ -83,6 +83,11 @@ const guiObj = {
   }
 };
 
+const iController = class iController {
+  notify(sender, event) {
+  }
+};
+
 const directionNames = {
   up: {
     x: 0,
@@ -135,13 +140,6 @@ function Plan (width, height) {
 let plan;
 plan = new Plan(guiObj.other.boardSize, guiObj.other.boardSize);
 
-class Vector {
-  constructor (x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
 class Cell {
   constructor (x, y, type) {
     this.x = x;
@@ -169,12 +167,12 @@ class Grid {
 class Snake {
   constructor (grid) {
     this.grid = grid;
+    this.speed = 250;
     this.body = [];
     this.direction = directionNames.right;
   }
 
   move () {
-    this.speed = 250;
     const target = this.grid.get(this.body[0].x + this.direction.x, this.body[0].y + this.direction.y);
     const tail = this.body[this.body.length - 1];
 
@@ -184,7 +182,7 @@ class Snake {
 
       if (target.type === 'apple') {
         this.body.push(new Cell(tail.x - this.direction.x, tail.y - this.direction.y, 'snake'));
-        level.apple.spawn();
+        super.appleFactory.createApple();
       }
       this.grid.set(tail.x, tail.y, 'empty');
       this.body.pop();
@@ -225,13 +223,13 @@ class Snake {
   }
 }
 
-class Apple {
-  constructor (grid) {
+class AppleFactory {
+  constructor(grid) {
     this.grid = grid;
-    this.array = [];
+    this.list = [];
   }
 
-  spawn () {
+  createApple() {
     function getRandomInt (min, max) {
       min = Math.ceil(min);
       max = Math.floor(max);
@@ -242,8 +240,17 @@ class Apple {
     const target = this.grid.get(targetX, targetY);
     if (target.type === 'empty') {
       this.grid.set(targetX, targetY, 'apple');
-    } else { this.spawn(); }
+    } else { this.createApple(); }
   }
+}
+
+class Apple {
+  constructor() {
+    this.x = x;
+    this.y = y;
+  }
+
+
 }
 
 class Level {
@@ -285,7 +292,17 @@ class Level {
   }
 }
 
-let level = new Level(plan);
+const Controller = class Controller {
+  constructor() {
+    this.level = new Level(plan);
+    this.snake = new Snake(this.level.grid);
+    this.appleFactory = new AppleFactory(this.level.grid);
+  }
+};
+
+
+
+
 
 class Menu {
   constructor() {
@@ -333,7 +350,6 @@ class Menu {
     current.action();
   }
 }
-
 
 const menu = new Menu();
 const arrowCodes = {
@@ -462,9 +478,9 @@ function displayCanvas () {
       }
     }
 
-    for (let y = 0; y < level.height; y++) {
-      for (let x = 0; x < level.width; x++) {
-        const element = level.grid.get(x, y);
+    for (let y = 0; y < Controller.height; y++) {
+      for (let x = 0; x < Controller.width; x++) {
+        const element = Controller.grid.get(x, y);
         switch (element.type) {
           case 'wall':
             drawWall(x, y);
@@ -475,13 +491,14 @@ function displayCanvas () {
           case 'apple':
             drawApple(x, y);
             break;
-          case 'empty':
-            drawEmptySpace(x, y);
+          default:
+            drawEmptySpace(y, x);
             break;
         }
       }
     }
   }
+
   function drawMenu () {
     function drawElement (element) {
       const link = element.link;
