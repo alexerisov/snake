@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <canvas id="canvas"></canvas>
+    <canvas></canvas>
 
     <script>
         window.addEventListener('load',
@@ -89,13 +89,7 @@
                 f73.add(guiObj.menuQuit, 'textFont' );
                 f73.addColor(guiObj.menuQuit, 'textColor');
 
-                function loop() {
-                    displayCanvas();
-                        requestAnimationFrame(function () {
-                            loop();
-                        });
-                }
-                loop();
+
             }, false);
     </script>
 </body>
