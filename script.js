@@ -41,14 +41,27 @@ const guiObj = {
     textColor: '#777777'
   },
 
+  scores: {
+    posX: 120,
+    posY: 35,
+    rectHeight: 1,
+    rectWidth: 1,
+    rectColor: 'rgba(95,93,93,0.0)',
+    rectStrokeWidth: 0.01,
+    rectStrokeColor: '#000000',
+    textSize: 20,
+    textFont: 'Helvetica',
+    textColor: '#777777'
+  },
+
   menu: {
     rectColor: '#181818',
-    rectStrokeWidth: 50,
+    rectStrokeWidth: 20,
     rectStrokeColor: '#3b3b3b'
   },
 
   menuStart: {
-    posX: 250,
+    posX: 300,
     posY: 300,
     rectHeight: 85,
     rectWidth: 375,
@@ -62,7 +75,7 @@ const guiObj = {
   },
 
   menuQuit: {
-    posX: 250,
+    posX: 300,
     posY: 400,
     rectHeight: 85,
     rectWidth: 375,
@@ -78,7 +91,7 @@ const guiObj = {
   other: {
     godMode: false,
     boardSize: 25,
-    pause: true,
+    pause: false,
     game: 'menu'
   }
 };
@@ -88,24 +101,7 @@ const iController = class iController {
   }
 };
 
-const directionNames = {
-  up: {
-    x: 0,
-    y: -1
-  },
-  down: {
-    x: 0,
-    y: 1
-  },
-  left: {
-    x: -1,
-    y: 0
-  },
-  right: {
-    x: 1,
-    y: 0
-  }
-};
+
 
 function Plan (width, height) {
   const space = new Array(height);
@@ -121,12 +117,6 @@ function Plan (width, height) {
         case (y === 0 || y === height - 1):
           line += '#';
           break;
-        case ((x === 3 && y === 3) || (x === 4 && y === 3) || (x === 5 && y === 3)):
-          line += 's';
-          break;
-        case (x === 13 && y === 13):
-          line += '@';
-          break;
         default:
           line += ' ';
           break;
@@ -140,13 +130,45 @@ function Plan (width, height) {
 let plan;
 plan = new Plan(guiObj.other.boardSize, guiObj.other.boardSize);
 
+class Component {
+  constructor() {
+    this.mediator = null;
+  }
+
+  notify(component, event) {
+    this.mediator.notify(component, event);
+  }
+}
+
+class Event {
+  constructor(name, data) {
+    this.name = name;
+    this.data = data;
+  }
+}
+
 class Cell {
-  constructor (x, y, type) {
+  constructor(x, y, type = null) {
     this.x = x;
     this.y = y;
     this.type = type;
   }
+
+  plus(other) {
+    return new Cell(this.x + other.x, this.y + other.y);
+  }
+
+  multiply(other) {
+    return new Cell(this.x * other.x, this.y * other.y);
+  }
 }
+
+const directionNames = {
+  'up': new Cell(0, -1),
+  'down': new Cell(0, 1),
+  'left': new Cell(-1, 0),
+  'right': new Cell(1, 0),
+};
 
 class Grid {
   constructor (width, height) {
@@ -156,7 +178,7 @@ class Grid {
   }
 
   get (x, y) {
-    return this.space[x + (y * this.width)];
+      return this.space[x + (y * this.width)];
   }
 
   set (x, y, value) {
@@ -164,41 +186,51 @@ class Grid {
   }
 }
 
-class Snake {
+class Snake extends Component {
   constructor (grid) {
+    super();
+    this.name = 'snake';
     this.grid = grid;
     this.speed = 250;
     this.body = [];
     this.direction = directionNames.right;
   }
 
+  grow () {
+    const tail = this.body[this.body.length - 1];
+    this.body.push(new Cell(tail.x - this.direction.x, tail.y - this.direction.y, 'snake'));
+  }
+
   move () {
     const target = this.grid.get(this.body[0].x + this.direction.x, this.body[0].y + this.direction.y);
     const tail = this.body[this.body.length - 1];
 
-    if (target.type !== 'wall' && target.type !== 'snake') {
+    function step () {
       this.grid.set(target.x, target.y, 'snake');
       this.body.unshift(new Cell(target.x, target.y, 'snake'));
-
-      if (target.type === 'apple') {
-        this.body.push(new Cell(tail.x - this.direction.x, tail.y - this.direction.y, 'snake'));
-        super.appleFactory.createApple();
-      }
       this.grid.set(tail.x, tail.y, 'empty');
       this.body.pop();
       this.canTurn = true;
-    } else if (guiObj.other.godMode === true) {
-      // do something in godMode
-    } else {
-      level = new Level(plan);
     }
+    if (target.type !== 'empty') {
+      this.collide(target);
+      if (target.type === 'apple') {
+        step.call(this);
+      }
+    } else {
+      step.call(this);
+    }
+  }
+
+  collide(target) {
+    this.notify(this, new Event('collide', target))
   }
 
   turn (direction) {
     if (this.canTurn) {
       // checking the REVERSE direction
       if (this.direction.y === -directionNames[direction].y &&
-        this.direction.x === -directionNames[direction].x) {
+          this.direction.x === -directionNames[direction].x) {
 
       }
       // checking the FORWARD direction (for speed-up)
@@ -212,8 +244,9 @@ class Snake {
   }
 
   loop () {
+    let self = this;
     window.timer = setTimeout(function run () {
-      level.snake.move();
+      self.move();
       window.timer = setTimeout(run, 250 / (guiObj.snake.speed));
     }, 250 / (guiObj.snake.speed));
   }
@@ -223,8 +256,10 @@ class Snake {
   }
 }
 
-class AppleFactory {
+class AppleFactory extends Component {
   constructor(grid) {
+    super();
+    this.name = 'appleFactory';
     this.grid = grid;
     this.list = [];
   }
@@ -244,23 +279,17 @@ class AppleFactory {
   }
 }
 
-class Apple {
-  constructor() {
-    this.x = x;
-    this.y = y;
-  }
-
-
-}
-
-class Level {
+class Level extends Component {
   constructor (plan) {
+    super();
+    this.name = 'level';
     this.width = plan[0].length;
     this.height = plan.length;
     this.grid = new Grid(this.width, this.height);
-    this.snake = new Snake(this.grid);
-    this.apple = new Apple(this.grid);
+    this.scores = {i: 0};
+  }
 
+  parse(plan) {
     for (let y = 0; y < this.height; y++) {
       const line = plan[y];
       for (let x = 0; x < this.width; x++) {
@@ -274,12 +303,12 @@ class Level {
 
           case (ch === '@'):
             chType = 'apple';
-            this.apple.array.unshift(new Cell(x, y, chType));
+            // this.apple.array.unshift(new Cell(x, y, chType));
             break;
 
           case (ch === 's'):
             chType = 'snake';
-            this.snake.body.unshift(new Cell(x, y, chType));
+            // this.snake.body.unshift(new Cell(x, y, chType));
             break;
 
           default:
@@ -290,27 +319,24 @@ class Level {
       }
     }
   }
+
+  init(...initValues) {
+   initValues.forEach(elt => {
+     this.grid.set(elt.x, elt.y, elt.type)
+   })
+  }
 }
 
-const Controller = class Controller {
+class Menu extends Component {
   constructor() {
-    this.level = new Level(plan);
-    this.snake = new Snake(this.level.grid);
-    this.appleFactory = new AppleFactory(this.level.grid);
-  }
-};
-
-
-
-
-
-class Menu {
-  constructor() {
+    super();
+    this.name = 'menu';
+    let self = this;
     this.list = [{
       name: 'Start',
       link: guiObj.menuStart,
       isChosen: true,
-      action () {guiObj.other.game = 'game'}
+      action () {guiObj.other.game = 'game'; self.mediator.components.snake.loop();}
     },
       {
         name: 'Quit',
@@ -326,7 +352,7 @@ class Menu {
     let current = this.list.filter(item => item.isChosen)[0];
     let currentIndex = this.list.indexOf(current);
 
-      switch (direction) {
+    switch (direction) {
       case 'up':
         if (0 <= currentIndex - 1) {
           next = this.list[currentIndex - 1];
@@ -351,7 +377,6 @@ class Menu {
   }
 }
 
-const menu = new Menu();
 const arrowCodes = {
   37: 'left',
   38: 'up',
@@ -359,184 +384,301 @@ const arrowCodes = {
   40: 'down'
 };
 
-addEventListener('keydown', function (event) {
+class Controls extends Component {
+  constructor() {
+    super();
+    this.name = 'controls';
+    let self = this;
+    window.addEventListener('keydown', function (event) {
   switch (event.which) {
     case (37): // LEFT arrow
-      level.snake.turn('left');
+      self.notify(self, new Event('keyPressed', 'left'));
       break;
     case (38): // UP arrow
-      if (guiObj.other.game === 'game') {
-        level.snake.turn('up');
-      } else {
-        menu.scroll('up');
-      }
+      self.notify(self, new Event('keyPressed', 'up'));
       break;
     case (39): // RIGHT arrow
-      level.snake.turn('right');
+      self.notify(self, new Event('keyPressed', 'right'));
       break;
     case (40): // DOWN arrow
-      if (guiObj.other.game === 'game') {
-        level.snake.turn('down');
-      } else {
-        menu.scroll('down');
-      }
+      self.notify(self, new Event('keyPressed', 'down'));
       break;
     case (13): // ENTER
-      if (guiObj.other.game === 'menu') {
-        menu.select();
-      } else {
-        if (guiObj.other.pause === false) {
-
-        } else {
-          level.snake.loop();
-          guiObj.other.pause = false;
-        }
-      }
+      self.notify(self, new Event('keyPressed', 'enter'));
       break;
     case (27): // ESC
-      if (guiObj.other.pause === false) {
-        level.snake.loopStop();
-        guiObj.other.pause = true;
-      } else {
-        level.snake.loop();
-        guiObj.other.pause = false;
-      }
+      self.notify(self, new Event('keyPressed', 'esc'));
       break;
   }
 });
+}
+}
 
-function displayCanvas () {
-  const cellSize = 500 / guiObj.other.boardSize;
-  const canvas = document.querySelector('canvas');
-  canvas.setAttribute('width', '500');
-  canvas.setAttribute('height', '500');
-
-  const cx = canvas.getContext('2d');
-
-  function drawRect (x, y, width, height, color) {
-    cx.fillStyle = color;
-    cx.fillRect(x, y, width, height);
+class Renderer {
+  constructor(canvasID) {
+    this.data = {};
+    this.name = 'renderer';
+    this.cellSize = 500 / guiObj.other.boardSize;
+    this.can = document.querySelector(`${canvasID}`);
+    this.can.setAttribute('width', '600');
+    this.can.setAttribute('height', '600');
+    this.cx = this.can.getContext('2d');
+    this.corner = {x: 50, y: 50};
   }
 
-  function drawStroke (x, y, width, height, color, px) {
-    cx.strokeStyle = color;
-    cx.lineWidth = px;
-    cx.strokeRect(x, y, width, height);
+  drawRect(x, y, width, height, color) {
+    this.cx.fillStyle = color;
+    this.cx.fillRect(x, y, width, height);
   }
 
-  function drawText (text, x, y, size, font, color, maxWidth) {
+  drawStroke(x, y, width, height, color, px) {
+    this.cx.strokeStyle = color;
+    this.cx.lineWidth = px;
+    this.cx.strokeRect(x, y, width, height);
+  }
+
+  drawText(text, x, y, size, font, color, maxWidth) {
     if (maxWidth === undefined) {
     } else {
       this.maxWidth = maxWidth;
     }
-    cx.textAlign = 'center';
-    cx.textBaseline = 'middle';
-    cx.fillStyle = color;
-    cx.font = `${size}px ${font}`;
-    cx.fillText(text, x, y, this.maxWidth);
+    this.cx.textAlign = 'center';
+    this.cx.textBaseline = 'middle';
+    this.cx.fillStyle = color;
+    this.cx.font = `${size}px ${font}`;
+    this.cx.fillText(text, x, y, this.maxWidth);
   }
 
-  function drawGame () {
-    function drawCell (x, y, color) {
-      this.size = cellSize;
-      drawRect(x * this.size, y * this.size, this.size, this.size, color);
-    }
+  drawCell (x, y, color) {
+    this.size = this.cellSize;
+    this.drawRect(x * this.size + this.corner.x, y * this.size + this.corner.y, this.size, this.size, color);
+  }
 
-    function drawCellStroke (x, y, color, px) {
-      this.size = cellSize;
-      drawStroke(x * this.size, y * this.size, this.size, this.size, color, px);
-    }
+  drawCellStroke (x, y, color, px) {
+    this.size = this.cellSize;
+    this.drawStroke(x * this.size + this.corner.x, y * this.size + this.corner.y, this.size, this.size, color, px);
+  }
 
-    function drawWall (x, y) {
-      const gradient = cx.createLinearGradient(x * cellSize, y * cellSize, (x + 1) * cellSize, (y + 1) * cellSize);
-      gradient.addColorStop(0, guiObj.wall.gradientColor1);
-      gradient.addColorStop(1, guiObj.wall.gradientColor2);
-      drawCell(x, y, gradient);
-      if (guiObj.wall.stroke) {
-        drawCellStroke(x, y, guiObj.wall.strokeColor, guiObj.wall.strokeWidth);
-      }
+  drawWall (x, y) {
+    const gradient = this.cx.createLinearGradient(x * this.cellSize + 50, y * this.cellSize + 50, (x + 1) * this.cellSize + 50, (y + 1) * this.cellSize + 50);
+    gradient.addColorStop(0, guiObj.wall.gradientColor1);
+    gradient.addColorStop(1, guiObj.wall.gradientColor2);
+    this.drawCell(x, y, gradient);
+    if (guiObj.wall.stroke) {
+      this.drawCellStroke(x, y, guiObj.wall.strokeColor, guiObj.wall.strokeWidth);
     }
+  }
 
-    function drawSnake (x, y) {
-      drawCell(x, y, guiObj.snake.fillColor);
-      if (guiObj.snake.stroke) {
-        drawCellStroke(x, y, guiObj.snake.strokeColor, guiObj.snake.strokeWidth);
-      }
+  drawSnake (x, y) {
+    this.drawCell(x, y, guiObj.snake.fillColor);
+    if (guiObj.snake.stroke) {
+      this.drawCellStroke(x, y, guiObj.snake.strokeColor, guiObj.snake.strokeWidth);
     }
+  }
 
-    function drawApple (x, y) {
-      drawCell(x, y, guiObj.apple.fillColor);
-      if (guiObj.apple.stroke) {
-        drawCellStroke(x, y, guiObj.apple.strokeColor, guiObj.apple.strokeWidth);
-      }
+  drawApple (x, y) {
+   this.drawCell(x, y, guiObj.apple.fillColor);
+    if (guiObj.apple.stroke) {
+      this.drawCellStroke(x, y, guiObj.apple.strokeColor, guiObj.apple.strokeWidth);
     }
+  }
 
-    function drawEmptySpace (x, y) {
-      drawCell(x, y, guiObj.empty.fillColor);
-      if (guiObj.empty.stroke) {
-        drawCellStroke(x, y, guiObj.empty.strokeColor, guiObj.empty.strokeWidth);
-      }
+  drawEmptySpace (x, y) {
+    this.drawCell(x, y, guiObj.empty.fillColor);
+    if (guiObj.empty.stroke) {
+      this.drawCellStroke(x, y, guiObj.empty.strokeColor, guiObj.empty.strokeWidth);
     }
+  }
 
-    for (let y = 0; y < Controller.height; y++) {
-      for (let x = 0; x < Controller.width; x++) {
-        const element = Controller.grid.get(x, y);
+  drawGame() {
+    this.cx.clearRect(0, 0, this.can.width, this.can.height);;
+    for (let y = 0; y < this.data.grid.height; y++) {
+      for (let x = 0; x < this.data.grid.width; x++) {
+        const element = this.data.grid.get(x, y);
         switch (element.type) {
           case 'wall':
-            drawWall(x, y);
+            this.drawWall(x, y);
             break;
           case 'snake':
-            drawSnake(x, y);
+            this.drawSnake(x, y);
             break;
           case 'apple':
-            drawApple(x, y);
+            this.drawApple(x, y);
             break;
           default:
-            drawEmptySpace(y, x);
+            this.drawEmptySpace(x, y);
             break;
         }
       }
     }
   }
 
-  function drawMenu () {
-    function drawElement (element) {
-      const link = element.link;
-      const x = 250 - link.rectWidth / 2;
-      const y = link.posY - link.rectHeight / 2;
-      let color = element.isChosen ? link.chosenRectColor : link.rectColor;
-      drawRect(x, y, link.rectWidth, link.rectHeight, color);
-      drawStroke(x, y, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
-      drawText(element.name, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
-    }
+  drawElement (element) {
+    const link = element.link;
+    const x = this.can.width / 2 - link.rectWidth / 2;
+    const y = link.posY - link.rectHeight / 2;
+    let color = element.isChosen ? link.chosenRectColor : link.rectColor;
+    this.drawRect (x, y, link.rectWidth, link.rectHeight, color);
+    this.drawStroke (x, y, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+    this.drawText (element.name, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
+  }
 
-    drawRect(0, 0, 500, 500, guiObj.menu.rectColor);
-    drawStroke(0, 0, 500, 500, guiObj.menu.rectStrokeColor, guiObj.menu.rectStrokeWidth);
-
-    for (let i = 0; i < menu.list.length; i++) {
-      const element = menu.list[i];
-      drawElement(element);
+  drawMenu() {
+    this.cx.clearRect(0, 0, this.can.width, this.can.height);;
+    let self = this;
+    this.drawRect (this.corner.x, this.corner.y, 500, 500, guiObj.menu.rectColor);
+    this.drawStroke (this.corner.x, this.corner.y, 500, 500, guiObj.menu.rectStrokeColor, guiObj.menu.rectStrokeWidth);
+    for (let i = 0; i < this.data.menu.list.length; i++) {
+      const element = this.data.menu.list[i];
+      self.drawElement(element);
     }
   }
 
-  function drawPause () {
+  drawPause() {
     const link = guiObj.pause;
-    const posX = 250 - link.rectWidth / 2;
-    const posY = 250 - link.rectHeight / 2;
-    drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
-    drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
-    drawText('PAUSE', 250, 250, link.textSize, link.textFont, link.textColor);
+    const posX = this.can.width / 2 - link.rectWidth / 2;
+    const posY = this.can.height / 2 - link.rectHeight / 2;
+    this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
+    this.drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+    this.drawText('PAUSE', this.can.width / 2, this.can.height / 2, link.textSize, link.textFont, link.textColor);
   }
 
-  switch (guiObj.other.game) {
+  drawScores() {
+    const link = guiObj.scores;
+    const posX = link.posX - link.rectWidth / 2;
+    const posY = link.posY - link.rectHeight / 2;
+    this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
+    this.drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+    this.drawText(`scores: ${this.data.scores.i}`, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
+  }
+
+  display() {
+    switch (guiObj.other.game) {
     case 'menu':
-      drawMenu();
+      this.drawMenu();
       break;
     case 'game':
-      drawGame();
+      this.drawGame();
+      this.drawScores();
       if (guiObj.other.pause === true) {
-        drawPause();
+        this.drawPause();
       }
       break;
-  }
+  }}
 }
+
+class Mediator {
+  constructor() {
+    this.components = {};
+  }
+
+  register(component) {
+    this.components[component.name] = component;
+    component.mediator = this;
+  }
+
+  notify(sender, event ) {
+
+    switch (sender) {
+      case (this.components.snake): // SNAKE
+
+                switch (event.data.type) {
+                  case ('apple'):
+                    this.components.snake.grow();
+                    this.components.level.scores.i += 1;
+                    this.components.appleFactory.createApple();
+                    break;
+                  case ('wall' || 'snake'):
+                    if (!guiObj.other.godMode) {
+                      this.components.snake.loopStop();
+                      this.start();
+                    }
+                    break;
+                }
+      break;
+
+      case (this.components.controls): // CONTROLS
+        if (guiObj.other.game === 'game') { // GAME branch
+                            switch (true) {
+                                case (event.data in directionNames):
+                                               this.components.snake.turn(event.data);
+                                               break;
+                                case (event.data === 'enter'):
+                                              if (guiObj.other.pause) {
+                                                guiObj.other.pause = false;
+                                                this.components.snake.loop();
+                                              }
+                                              break;
+                                case (event.data === 'esc'):
+                                              switch (guiObj.other.pause) {
+                                                case true:
+                                                  guiObj.other.pause = false;
+                                                  this.components.snake.loop();
+                                                  break;
+                                                case false:
+                                                  guiObj.other.pause = true;
+                                                  this.components.snake.loopStop();
+                                                  break;
+                                              }
+                                              break;
+                          }
+                  } else { // MENU branch
+                          if (event.data === 'up' || event.data === 'down') {
+                            this.components.menu.scroll(event.data);
+                          } else if (event.data === 'enter') {
+                            this.components.menu.select();
+                          }
+                  }
+
+
+    break;
+    }
+  }
+
+  start() {
+    let defaultDirection = directionNames.right;
+    let snakeValues = [new Cell(5, 3, 'snake'),
+                       new Cell(4, 3, 'snake'),
+                       new Cell(3, 3, 'snake')];
+    let appleValues = [new Cell(10, 10, 'apple')];
+    this.components.snake.direction = defaultDirection;
+    this.components.snake.body = snakeValues;
+    this.components.appleFactory.list = appleValues;
+    this.components.level.parse(plan);
+    this.components.level.scores.i = 0;
+    this.components.level.init(snakeValues, ...appleValues);
+  }
+
+}
+
+const mediator = new Mediator();
+
+const level = new Level(plan);
+const snake = new Snake(level.grid);
+const appleFactory = new AppleFactory(level.grid);
+const menu = new Menu();
+const controls = new Controls();
+const renderer = new Renderer('canvas');
+
+
+
+mediator.register(level);
+mediator.register(snake);
+mediator.register(appleFactory);
+mediator.register(menu);
+mediator.register(controls);
+mediator.register(renderer);
+mediator.start();
+renderer.data.grid = level.grid;
+renderer.data.scores = level.scores;
+renderer.data.menu = menu;
+
+
+
+
+
+const animate = () => {
+  requestAnimationFrame(animate)
+  renderer.display();
+};
+requestAnimationFrame(animate);
