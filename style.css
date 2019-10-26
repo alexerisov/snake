@@ -4,8 +4,8 @@ body {
 }
 
 canvas {
-  --width: 500px;
-  --height: 500px;
+  --width: 600px;
+  --height: 600px;
   --margin-left: calc( var(--width) / -2);
   --margin-top: calc(var(--height) / -2);
 }
