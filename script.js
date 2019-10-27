@@ -669,9 +669,11 @@ mediator.register(menu);
 mediator.register(controls);
 mediator.register(renderer);
 mediator.start();
-renderer.data.grid = level.grid;
-renderer.data.scores = level.scores;
-renderer.data.menu = menu;
+renderer.data = {
+  grid: level.grid,
+  scores: level.scores,
+  menu: menu,
+};
 
 
 
