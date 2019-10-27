@@ -597,6 +597,7 @@ class Mediator {
             this.components.appleFactory.createApple();
             break;
           case ('wall'):
+          case ('snake'):
             if (settings.other.godMode === false) {
               this.components.snake.loopStop();
               this.start();
