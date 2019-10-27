@@ -449,13 +449,12 @@ class Renderer {
     this.cx.fillText(text, x, y, this.maxWidth);
   }
 
-  drawCell (x, y, color, size = this.cellSize, margin = this.corner) {
-    this.drawRect(x * size + margin.x, y * size + margin.y, size, size, color);
+  drawCell (x, y, color, size = this.cellSize, margin = this.corner.x) {
+    this.drawRect(x * this.cellSize + margin, y * this.cellSize + margin, size, size, color);
   }
 
-  drawCellStroke (x, y, color, px, size = this.size, margin = this.corner) {
-    this.size = this.cellSize;
-    this.drawStroke(x * size + margin.x, y * size + margin.y, size, size, color, px);
+  drawCellStroke (x, y, color, px, size = this.size, margin = this.corner.x) {
+    this.drawStroke(x * this.cellSize + margin, y * this.cellSize + margin, size, size, color, px);
   }
 
   drawWall (x, y) {
@@ -469,9 +468,10 @@ class Renderer {
   }
 
   drawSnake (x, y) {
-    this.drawCell(x, y, settings.snake.fillColor);
+    let size = 15;
+    this.drawCell(x, y, settings.snake.fillColor, size, this.corner.x + (this.cellSize - size)/2);
     if (settings.snake.stroke) {
-      this.drawCellStroke(x, y, settings.snake.strokeColor, settings.snake.strokeWidth);
+      this.drawCellStroke(x, y, settings.snake.strokeColor, settings.snake.strokeWidth, size, this.corner.x + (this.cellSize - size)/2);
     }
   }
 
@@ -499,6 +499,7 @@ class Renderer {
             this.drawWall(x, y);
             break;
           case 'snake':
+            this.drawEmptySpace(x, y);
             this.drawSnake(x, y);
             break;
           case 'apple':
@@ -587,7 +588,7 @@ class Mediator {
                     this.components.level.scores.i += 1;
                     this.components.appleFactory.createApple();
                     break;
-                  case ('wall' || 'snake'):
+                  case ('wall'):
                     if (!settings.other.godMode) {
                       this.components.snake.loopStop();
                       this.start();
