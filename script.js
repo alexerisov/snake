@@ -473,16 +473,20 @@ class Renderer {
     this.cx.lineWidth = settings.snake.strokeWidth;
     this.cx.strokeStyle = settings.snake.fillColor;
     this.cx.lineCap = 'round';
+    this.cx.lineJoin = 'round';
     this.data.snakeBody.forEach((elt, i, arr) => {
 
       let centerX = elt.x * self.cellSize + self.corner.x + self.cellSize/2;
       let centerY = elt.y * self.cellSize + self.corner.x + self.cellSize/2;
-
+      self.cx.lineWidth -= i*0.25;
+      // if (self.cx.lineWidth < 0.3*settings.snake.strokeWidth) {
+      //   self.cx.lineWidth = 0.2*settings.snake.strokeWidth;
+      // }
       self.cx.lineTo(centerX, centerY);
       self.cx.moveTo(centerX, centerY);
-
+      this.cx.stroke();
     });
-    this.cx.stroke();
+
   }
 
   drawApple (x, y) {
