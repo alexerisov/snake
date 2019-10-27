@@ -473,18 +473,15 @@ class Renderer {
     this.cx.lineWidth = settings.snake.strokeWidth;
     this.cx.strokeStyle = settings.snake.fillColor;
     this.cx.lineCap = 'round';
-    for (let i = 0; i < this.data.snakeBody.length; i++) {
+    this.data.snakeBody.forEach((elt, i, arr) => {
 
-      let centerX = this.data.snakeBody[i].x * self.cellSize + self.corner.x + self.cellSize/2;
-      let centerY = this.data.snakeBody[i].y * self.cellSize + self.corner.x + self.cellSize/2;
+      let centerX = elt.x * self.cellSize + self.corner.x + self.cellSize/2;
+      let centerY = elt.y * self.cellSize + self.corner.x + self.cellSize/2;
 
-      if (i === 0) {
-        self.cx.moveTo(centerX, centerY);
-      }
       self.cx.lineTo(centerX, centerY);
       self.cx.moveTo(centerX, centerY);
 
-    }
+    });
     this.cx.stroke();
   }
 
