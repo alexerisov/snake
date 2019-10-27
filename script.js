@@ -470,21 +470,21 @@ class Renderer {
   drawSnake () {
     this.cx.beginPath();
     let self = this;
-    // self.cx.moveTo(this.data.snakeBody[0].x, this.data.snakeBody[0].y);
     this.cx.lineWidth = settings.snake.strokeWidth;
     this.cx.strokeStyle = settings.snake.fillColor;
-    this.cx.lineCap = 'square';
-    this.data.snakeBody.forEach((elt) => {
-      let centerX = elt.x * self.cellSize + self.corner.x + self.cellSize/2;
-      let centerY = elt.y * self.cellSize + self.corner.x + self.cellSize/2;
-      // let nextCenterX = arr[i+1].x * self.cellSize + self.cellSize/2;
-      // let nextCenterY = arr[i+1].y * self.cellSize + self.cellSize/2;
+    this.cx.lineCap = 'round';
+    for (let i = 0; i < this.data.snakeBody.length; i++) {
 
+      let centerX = this.data.snakeBody[i].x * self.cellSize + self.corner.x + self.cellSize/2;
+      let centerY = this.data.snakeBody[i].y * self.cellSize + self.corner.x + self.cellSize/2;
+
+      if (i === 0) {
+        self.cx.moveTo(centerX, centerY);
+      }
       self.cx.lineTo(centerX, centerY);
       self.cx.moveTo(centerX, centerY);
-      // self.cx.arc(centerX, centerY, settings.snake.strokeWidth/2 ,0,Math.PI*2,true);
-      // self.cx.moveTo(centerX, centerY);
-    });
+
+    }
     this.cx.stroke();
   }
 
@@ -504,6 +504,7 @@ class Renderer {
 
   drawGame() {
     this.cx.clearRect(0, 0, this.can.width, this.can.height);
+
     for (let y = 0; y < this.data.grid.height; y++) {
       for (let x = 0; x < this.data.grid.width; x++) {
         const element = this.data.grid.get(x, y);
@@ -646,6 +647,7 @@ class Mediator {
   }
 
   start() {
+    let self = this;
     let defaultDirection = directionNames.right;
     let snakeValues = [new Cell(5, 3, 'snake'),
       new Cell(4, 3, 'snake'),
@@ -657,6 +659,13 @@ class Mediator {
     this.components.level.parse(plan);
     this.components.level.scores.i = 0;
     this.components.level.init(snakeValues, ...appleValues);
+    this.components.renderer.data = {
+      grid: self.components.level.grid,
+      scores: self.components.level.scores,
+      menu: self.components.menu,
+      snakeBody: self.components.snake.body,
+      snakeDirection: self.components.snake.direction,
+    };
   }
 
 }
@@ -679,13 +688,7 @@ mediator.register(menu);
 mediator.register(controls);
 mediator.register(renderer);
 mediator.start();
-renderer.data = {
-  grid: level.grid,
-  scores: level.scores,
-  menu: menu,
-  snakeBody: snake.body,
-  snakeDirection: snake.direction,
-};
+
 
 
 
