@@ -20,7 +20,7 @@ const settings = {
     fillColor: '#0b401b',
     stroke: true,
     strokeColor: '#000000',
-    strokeWidth: 0.3
+    strokeWidth: 10
   },
 
   apple: {
@@ -467,12 +467,25 @@ class Renderer {
     }
   }
 
-  drawSnake (x, y) {
-    let size = 15;
-    this.drawCell(x, y, settings.snake.fillColor, size, this.corner.x + (this.cellSize - size)/2);
-    if (settings.snake.stroke) {
-      this.drawCellStroke(x, y, settings.snake.strokeColor, settings.snake.strokeWidth, size, this.corner.x + (this.cellSize - size)/2);
-    }
+  drawSnake () {
+    this.cx.beginPath();
+    let self = this;
+    // self.cx.moveTo(this.data.snakeBody[0].x, this.data.snakeBody[0].y);
+    this.cx.lineWidth = settings.snake.strokeWidth;
+    this.cx.strokeStyle = settings.snake.fillColor;
+    this.cx.lineCap = 'square';
+    this.data.snakeBody.forEach((elt) => {
+      let centerX = elt.x * self.cellSize + self.corner.x + self.cellSize/2;
+      let centerY = elt.y * self.cellSize + self.corner.x + self.cellSize/2;
+      // let nextCenterX = arr[i+1].x * self.cellSize + self.cellSize/2;
+      // let nextCenterY = arr[i+1].y * self.cellSize + self.cellSize/2;
+
+      self.cx.lineTo(centerX, centerY);
+      self.cx.moveTo(centerX, centerY);
+      // self.cx.arc(centerX, centerY, settings.snake.strokeWidth/2 ,0,Math.PI*2,true);
+      // self.cx.moveTo(centerX, centerY);
+    });
+    this.cx.stroke();
   }
 
   drawApple (x, y) {
@@ -490,7 +503,7 @@ class Renderer {
   }
 
   drawGame() {
-    this.cx.clearRect(0, 0, this.can.width, this.can.height);;
+    this.cx.clearRect(0, 0, this.can.width, this.can.height);
     for (let y = 0; y < this.data.grid.height; y++) {
       for (let x = 0; x < this.data.grid.width; x++) {
         const element = this.data.grid.get(x, y);
@@ -507,10 +520,7 @@ class Renderer {
         }
       }
     }
-    this.data.snakeBody.forEach((elt) => {
-      this.drawEmptySpace(elt.x, elt.y);
-      this.drawSnake(elt.x, elt.y);
-    });
+    this.drawSnake();
   }
 
   drawElement (element) {
@@ -582,64 +592,64 @@ class Mediator {
     switch (sender) {
       case (this.components.snake): // SNAKE
 
-                switch (event.data.type) {
-                  case ('apple'):
-                    this.components.snake.grow();
-                    this.components.level.scores.i += 1;
-                    this.components.appleFactory.createApple();
-                    break;
-                  case ('wall'):
-                    if (!settings.other.godMode) {
-                      this.components.snake.loopStop();
-                      this.start();
-                    }
-                    break;
-                }
-      break;
+        switch (event.data.type) {
+          case ('apple'):
+            this.components.snake.grow();
+            this.components.level.scores.i += 1;
+            this.components.appleFactory.createApple();
+            break;
+          case ('wall'):
+            if (!settings.other.godMode) {
+              this.components.snake.loopStop();
+              this.start();
+            }
+            break;
+        }
+        break;
 
       case (this.components.controls): // CONTROLS
         if (settings.other.game === 'game') { // GAME branch
-                            switch (true) {
-                                case (event.data in directionNames):
-                                               this.components.snake.turn(event.data);
-                                               break;
-                                case (event.data === 'enter'):
-                                              if (settings.other.pause) {
-                                                settings.other.pause = false;
-                                                this.components.snake.loop();
-                                              }
-                                              break;
-                                case (event.data === 'esc'):
-                                              switch (settings.other.pause) {
-                                                case true:
-                                                  settings.other.pause = false;
-                                                  this.components.snake.loop();
-                                                  break;
-                                                case false:
-                                                  settings.other.pause = true;
-                                                  this.components.snake.loopStop();
-                                                  break;
-                                              }
-                                              break;
-                          }
-                  } else { // MENU branch
-                          if (event.data === 'up' || event.data === 'down') {
-                            this.components.menu.scroll(event.data);
-                          } else if (event.data === 'enter') {
-                            this.components.menu.select();
-                          }
-                  }
+          switch (true) {
+            case (event.data in directionNames):
+              this.components.snake.turn(event.data);
+              break;
+            case (event.data === 'enter'):
+              if (settings.other.pause) {
+                settings.other.pause = false;
+                this.components.snake.loop();
+              }
+              break;
+            case (event.data === 'esc'):
+              switch (settings.other.pause) {
+                case true:
+                  settings.other.pause = false;
+                  this.components.snake.loop();
+                  break;
+                case false:
+                  settings.other.pause = true;
+                  this.components.snake.loopStop();
+                  break;
+              }
+              break;
+          }
+        } else { // MENU branch
+          if (event.data === 'up' || event.data === 'down') {
+            this.components.menu.scroll(event.data);
+          } else if (event.data === 'enter') {
+            this.components.menu.select();
+          }
+        }
 
 
-    break;
+        break;
     }
   }
 
   start() {
     let defaultDirection = directionNames.right;
     let snakeValues = [new Cell(5, 3, 'snake'),
-                       new Cell(4, 3, 'snake'),
-                       new Cell(3, 3, 'snake')];
+      new Cell(4, 3, 'snake'),
+      new Cell(3, 3, 'snake')];
     let appleValues = [new Cell(10, 10, 'apple')];
     this.components.snake.direction = defaultDirection;
     this.components.snake.body = snakeValues;
