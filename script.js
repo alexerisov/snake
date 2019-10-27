@@ -498,10 +498,6 @@ class Renderer {
           case 'wall':
             this.drawWall(x, y);
             break;
-          case 'snake':
-            this.drawEmptySpace(x, y);
-            this.drawSnake(x, y);
-            break;
           case 'apple':
             this.drawApple(x, y);
             break;
@@ -511,6 +507,10 @@ class Renderer {
         }
       }
     }
+    this.data.snakeBody.forEach((elt) => {
+      this.drawEmptySpace(elt.x, elt.y);
+      this.drawSnake(elt.x, elt.y);
+    });
   }
 
   drawElement (element) {
@@ -673,6 +673,8 @@ renderer.data = {
   grid: level.grid,
   scores: level.scores,
   menu: menu,
+  snakeBody: snake.body,
+  snakeDirection: snake.direction,
 };
 
 
