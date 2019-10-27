@@ -1,4 +1,4 @@
-const guiObj = {
+const settings = {
 
   wall: {
     gradientColor1: '#323232',
@@ -128,7 +128,7 @@ function Plan (width, height) {
 }
 
 let plan;
-plan = new Plan(guiObj.other.boardSize, guiObj.other.boardSize);
+plan = new Plan(settings.other.boardSize, settings.other.boardSize);
 
 class Component {
   constructor() {
@@ -247,8 +247,8 @@ class Snake extends Component {
     let self = this;
     window.timer = setTimeout(function run () {
       self.move();
-      window.timer = setTimeout(run, 250 / (guiObj.snake.speed));
-    }, 250 / (guiObj.snake.speed));
+      window.timer = setTimeout(run, 250 / (settings.snake.speed));
+    }, 250 / (settings.snake.speed));
   }
 
   loopStop () {
@@ -334,13 +334,13 @@ class Menu extends Component {
     let self = this;
     this.list = [{
       name: 'Start',
-      link: guiObj.menuStart,
+      link: settings.menuStart,
       isChosen: true,
-      action () {guiObj.other.game = 'game'; self.mediator.components.snake.loop();}
+      action () {settings.other.game = 'game'; self.mediator.components.snake.loop();}
     },
       {
         name: 'Quit',
-        link: guiObj.menuQuit,
+        link: settings.menuQuit,
         isChosen: false,
         action () {window.close()}
       }
@@ -418,7 +418,7 @@ class Renderer {
   constructor(canvasID) {
     this.data = {};
     this.name = 'renderer';
-    this.cellSize = 500 / guiObj.other.boardSize;
+    this.cellSize = 500 / settings.other.boardSize;
     this.can = document.querySelector(`${canvasID}`);
     this.can.setAttribute('width', '600');
     this.can.setAttribute('height', '600');
@@ -461,32 +461,32 @@ class Renderer {
 
   drawWall (x, y) {
     const gradient = this.cx.createLinearGradient(x * this.cellSize + 50, y * this.cellSize + 50, (x + 1) * this.cellSize + 50, (y + 1) * this.cellSize + 50);
-    gradient.addColorStop(0, guiObj.wall.gradientColor1);
-    gradient.addColorStop(1, guiObj.wall.gradientColor2);
+    gradient.addColorStop(0, settings.wall.gradientColor1);
+    gradient.addColorStop(1, settings.wall.gradientColor2);
     this.drawCell(x, y, gradient);
-    if (guiObj.wall.stroke) {
-      this.drawCellStroke(x, y, guiObj.wall.strokeColor, guiObj.wall.strokeWidth);
+    if (settings.wall.stroke) {
+      this.drawCellStroke(x, y, settings.wall.strokeColor, settings.wall.strokeWidth);
     }
   }
 
   drawSnake (x, y) {
-    this.drawCell(x, y, guiObj.snake.fillColor);
-    if (guiObj.snake.stroke) {
-      this.drawCellStroke(x, y, guiObj.snake.strokeColor, guiObj.snake.strokeWidth);
+    this.drawCell(x, y, settings.snake.fillColor);
+    if (settings.snake.stroke) {
+      this.drawCellStroke(x, y, settings.snake.strokeColor, settings.snake.strokeWidth);
     }
   }
 
   drawApple (x, y) {
-   this.drawCell(x, y, guiObj.apple.fillColor);
-    if (guiObj.apple.stroke) {
-      this.drawCellStroke(x, y, guiObj.apple.strokeColor, guiObj.apple.strokeWidth);
+   this.drawCell(x, y, settings.apple.fillColor);
+    if (settings.apple.stroke) {
+      this.drawCellStroke(x, y, settings.apple.strokeColor, settings.apple.strokeWidth);
     }
   }
 
   drawEmptySpace (x, y) {
-    this.drawCell(x, y, guiObj.empty.fillColor);
-    if (guiObj.empty.stroke) {
-      this.drawCellStroke(x, y, guiObj.empty.strokeColor, guiObj.empty.strokeWidth);
+    this.drawCell(x, y, settings.empty.fillColor);
+    if (settings.empty.stroke) {
+      this.drawCellStroke(x, y, settings.empty.strokeColor, settings.empty.strokeWidth);
     }
   }
 
@@ -526,8 +526,8 @@ class Renderer {
   drawMenu() {
     this.cx.clearRect(0, 0, this.can.width, this.can.height);;
     let self = this;
-    this.drawRect (this.corner.x, this.corner.y, 500, 500, guiObj.menu.rectColor);
-    this.drawStroke (this.corner.x, this.corner.y, 500, 500, guiObj.menu.rectStrokeColor, guiObj.menu.rectStrokeWidth);
+    this.drawRect (this.corner.x, this.corner.y, 500, 500, settings.menu.rectColor);
+    this.drawStroke (this.corner.x, this.corner.y, 500, 500, settings.menu.rectStrokeColor, settings.menu.rectStrokeWidth);
     for (let i = 0; i < this.data.menu.list.length; i++) {
       const element = this.data.menu.list[i];
       self.drawElement(element);
@@ -535,7 +535,7 @@ class Renderer {
   }
 
   drawPause() {
-    const link = guiObj.pause;
+    const link = settings.pause;
     const posX = this.can.width / 2 - link.rectWidth / 2;
     const posY = this.can.height / 2 - link.rectHeight / 2;
     this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
@@ -544,7 +544,7 @@ class Renderer {
   }
 
   drawScores() {
-    const link = guiObj.scores;
+    const link = settings.scores;
     const posX = link.posX - link.rectWidth / 2;
     const posY = link.posY - link.rectHeight / 2;
     this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
@@ -553,14 +553,14 @@ class Renderer {
   }
 
   display() {
-    switch (guiObj.other.game) {
+    switch (settings.other.game) {
     case 'menu':
       this.drawMenu();
       break;
     case 'game':
       this.drawGame();
       this.drawScores();
-      if (guiObj.other.pause === true) {
+      if (settings.other.pause === true) {
         this.drawPause();
       }
       break;
@@ -589,7 +589,7 @@ class Mediator {
                     this.components.appleFactory.createApple();
                     break;
                   case ('wall' || 'snake'):
-                    if (!guiObj.other.godMode) {
+                    if (!settings.other.godMode) {
                       this.components.snake.loopStop();
                       this.start();
                     }
@@ -598,25 +598,25 @@ class Mediator {
       break;
 
       case (this.components.controls): // CONTROLS
-        if (guiObj.other.game === 'game') { // GAME branch
+        if (settings.other.game === 'game') { // GAME branch
                             switch (true) {
                                 case (event.data in directionNames):
                                                this.components.snake.turn(event.data);
                                                break;
                                 case (event.data === 'enter'):
-                                              if (guiObj.other.pause) {
-                                                guiObj.other.pause = false;
+                                              if (settings.other.pause) {
+                                                settings.other.pause = false;
                                                 this.components.snake.loop();
                                               }
                                               break;
                                 case (event.data === 'esc'):
-                                              switch (guiObj.other.pause) {
+                                              switch (settings.other.pause) {
                                                 case true:
-                                                  guiObj.other.pause = false;
+                                                  settings.other.pause = false;
                                                   this.components.snake.loop();
                                                   break;
                                                 case false:
-                                                  guiObj.other.pause = true;
+                                                  settings.other.pause = true;
                                                   this.components.snake.loopStop();
                                                   break;
                                               }
