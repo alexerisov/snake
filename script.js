@@ -449,14 +449,13 @@ class Renderer {
     this.cx.fillText(text, x, y, this.maxWidth);
   }
 
-  drawCell (x, y, color) {
-    this.size = this.cellSize;
-    this.drawRect(x * this.size + this.corner.x, y * this.size + this.corner.y, this.size, this.size, color);
+  drawCell (x, y, color, size = this.cellSize, margin = this.corner) {
+    this.drawRect(x * size + margin.x, y * size + margin.y, size, size, color);
   }
 
-  drawCellStroke (x, y, color, px) {
+  drawCellStroke (x, y, color, px, size = this.size, margin = this.corner) {
     this.size = this.cellSize;
-    this.drawStroke(x * this.size + this.corner.x, y * this.size + this.corner.y, this.size, this.size, color, px);
+    this.drawStroke(x * size + margin.x, y * size + margin.y, size, size, color, px);
   }
 
   drawWall (x, y) {
