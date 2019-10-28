@@ -54,6 +54,19 @@ const settings = {
     textColor: '#777777'
   },
 
+  lives: {
+    posX: 240,
+    posY: 35,
+    rectHeight: 1,
+    rectWidth: 1,
+    rectColor: 'rgba(95,93,93,0.0)',
+    rectStrokeWidth: 0.01,
+    rectStrokeColor: '#000000',
+    textSize: 20,
+    textFont: 'Helvetica',
+    textColor: '#777777'
+  },
+
   menu: {
     rectColor: '#181818',
     rectStrokeWidth: 20,
@@ -504,6 +517,15 @@ class Renderer {
     }
   }
 
+  drawLives () {
+    const link = settings.lives;
+    const posX = link.posX - link.rectWidth / 2;
+    const posY = link.posY - link.rectHeight / 2;
+    this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
+    this.drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
+    this.drawText(`lives: ${3}`, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
+  }
+
   drawEmptySpace (x, y) {
     this.drawCell(x, y, settings.empty.fillColor);
     if (settings.empty.stroke) {
@@ -579,6 +601,7 @@ class Renderer {
       break;
     case 'game':
       this.drawGame();
+      this.drawLives();
       this.drawScores();
       if (settings.other.pause === true) {
         this.drawPause();
