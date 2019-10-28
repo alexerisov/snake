@@ -17,7 +17,7 @@ const settings = {
 
   snake: {
     speed: 3,
-    fillColor: '#0b401b',
+    fillColor: 'rgba(11, 64, 27, 1)',
     stroke: true,
     strokeColor: '#000000',
     strokeWidth: 10
@@ -468,22 +468,30 @@ class Renderer {
   }
 
   drawSnake () {
-    this.cx.beginPath();
     let self = this;
     this.cx.lineWidth = settings.snake.strokeWidth;
     this.cx.strokeStyle = settings.snake.fillColor;
     this.cx.lineCap = 'round';
     this.cx.lineJoin = 'round';
     this.data.snakeBody.forEach((elt, i, arr) => {
-
-      let centerX = elt.x * self.cellSize + self.corner.x + self.cellSize/2;
-      let centerY = elt.y * self.cellSize + self.corner.x + self.cellSize/2;
-      self.cx.lineWidth -= i*0.25;
-      // if (self.cx.lineWidth < 0.3*settings.snake.strokeWidth) {
-      //   self.cx.lineWidth = 0.2*settings.snake.strokeWidth;
-      // }
-      self.cx.lineTo(centerX, centerY);
+      this.cx.beginPath();
+      let getCenter = {
+        x(elt) {return elt.x * self.cellSize + self.corner.x + self.cellSize/2},
+        y(elt) {return elt.y * self.cellSize + self.corner.x + self.cellSize/2}
+      };
+      let nextCenterX, nextCenterY;
+      let centerX = getCenter.x(elt);
+      let centerY = getCenter.y(elt);
+      if (i === arr.length -1) {
+      nextCenterX = getCenter.x(elt);
+      nextCenterY = getCenter.y(elt);
+      } else {
+        nextCenterX = getCenter.x(arr[i + 1]);
+        nextCenterY = getCenter.y(arr[i + 1]);
+      }
+      self.cx.lineWidth -= 2.5/(arr.length);
       self.cx.moveTo(centerX, centerY);
+      self.cx.lineTo(nextCenterX, nextCenterY);
       this.cx.stroke();
     });
 
