@@ -55,13 +55,12 @@ const settings = {
   },
 
   lives: {
-    posX: 240,
-    posY: 35,
-    rectHeight: 1,
-    rectWidth: 1,
-    rectColor: 'rgba(95,93,93,0.0)',
-    rectStrokeWidth: 0.01,
-    rectStrokeColor: '#000000',
+    textPosX: 240,
+    textPosY: 35,
+    heartPosX: 270,
+    heartPosY: 23,
+    heartWidth: 20,
+    heartHeight: 20,
     textSize: 20,
     textFont: 'Helvetica',
     textColor: '#777777'
@@ -300,6 +299,7 @@ class Level extends Component {
     this.height = plan.length;
     this.grid = new Grid(this.width, this.height);
     this.scores = {i: 0};
+    this.lives = {i: 5};
   }
 
   parse(plan) {
@@ -437,6 +437,8 @@ class Renderer {
     this.can.setAttribute('height', '600');
     this.cx = this.can.getContext('2d');
     this.corner = {x: 50, y: 50};
+    this.img = document.createElement("img");
+    this.img.src = "heart.png";
   }
 
   drawRect(x, y, width, height, color) {
@@ -519,11 +521,10 @@ class Renderer {
 
   drawLives () {
     const link = settings.lives;
-    const posX = link.posX - link.rectWidth / 2;
-    const posY = link.posY - link.rectHeight / 2;
-    this.drawRect(posX, posY, link.rectWidth, link.rectHeight, link.rectColor);
-    this.drawStroke(posX, posY, link.rectWidth, link.rectHeight, link.rectStrokeColor, link.rectStrokeWidth);
-    this.drawText(`lives: ${3}`, link.posX, link.posY, link.textSize, link.textFont, link.textColor);
+    this.drawText(`lives:`, link.textPosX, link.textPosY, link.textSize, link.textFont, link.textColor);
+    for (let j = 0; j < this.data.lives.i; j++) {
+      this.cx.drawImage(this.img, (link.heartPosX + j*(link.heartWidth + 5)), link.heartPosY, link.heartWidth, link.heartHeight);
+    }
   }
 
   drawEmptySpace (x, y) {
@@ -691,10 +692,12 @@ class Mediator {
     this.components.appleFactory.list = appleValues;
     this.components.level.parse(plan);
     this.components.level.scores.i = 0;
+    this.components.level.lives.i -= 1;
     this.components.level.init(snakeValues, ...appleValues);
     this.components.renderer.data = {
       grid: self.components.level.grid,
       scores: self.components.level.scores,
+      lives: self.components.level.lives,
       menu: self.components.menu,
       snakeBody: self.components.snake.body,
       snakeDirection: self.components.snake.direction,
