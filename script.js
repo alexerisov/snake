@@ -112,7 +112,7 @@ const settings = {
     },
 
     other: {
-        godMode: false,
+        godMode: true,
         boardSize: 25,
         pause: false,
         game: 'menu'
@@ -457,26 +457,28 @@ class Controls extends Component {
                     break;
             }
         });
+        let canvas = document.querySelector("canvas");
         window.addEventListener('touchstart', function (event) {
             function isInside(value, par1, par2) {
                 return par1 <= value && value <= par2;
             }
-            let canvas = document.querySelector("canvas");
             switch (true) {
-                case (isInside(event.screenX, 0, window.innerWidth / 2)): // LEFT arrow
+                case (isInside(event.touches[0].screenX, 0, window.outerWidth/ 2)  &&
+                    isInside(event.touches[0].screenY, canvas.offsetTop, canvas.offsetTop + canvas.offsetHeight)): // LEFT arrow
                     self.notify(self, new Event('touch', 'left'));
                     break;
-                case (isInside(event.screenY, 0, window.innerHeight / 2)): // UP arrow
+                case (isInside(event.touches[0].screenY, 0, window.outerHeight / 2)): // UP arrow
                     self.notify(self, new Event('touch', 'up'));
                     break;
-                case (isInside(event.screenX, window.innerWidth / 2, window.innerWidth)): // RIGHT arrow
+                case (isInside(event.touches[0].screenX, window.outerWidth/ 2, window.outerWidth)  &&
+                    isInside(event.touches[0].screenY, canvas.offsetTop, canvas.offsetTop + canvas.offsetHeight)): // RIGHT arrow
                     self.notify(self, new Event('touch', 'right'));
                     break;
-                case (isInside(event.screenY, window.innerHeight / 2, window.innerHeight)): // DOWN arrow
+                case (isInside(event.touches[0].screenY, window.outerHeight / 2, window.outerHeight)): // DOWN arrow
                     self.notify(self, new Event('touch', 'down'));
                     break;
-                case (isInside(event.screenX, canvas.offsetLeft + 112.5, canvas.offsetLeft + canvas.offsetWidth - 112.5) &&
-                    isInside(event.screenY, canvas.offsetTop + 257.5, canvas.offsetTop + canvas.offsetHeight - 257.5)): // START touch
+                case (isInside(event.touches[0].screenX, canvas.offsetLeft, canvas.offsetLeft + canvas.offsetWidth) &&
+                    isInside(event.touches[0].screenY, canvas.offsetTop, canvas.offsetTop + canvas.offsetHeight)): // START touch
                     self.notify(self, new Event('touch', 'start'));
                     break;
             }
@@ -762,7 +764,7 @@ class Mediator {
                         this.components.menu.scroll(event.data);
                     } else if (event.data === 'enter') {
                         this.components.menu.select();
-                    } else if (event.data === 'start'){
+                    } else if (event.name === 'touch'){
                       this.components.menu.list[0].action();
                     }
                 } else { //LOST branch

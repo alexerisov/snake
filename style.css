@@ -1,4 +1,5 @@
 body {
+    overflow: hidden;
     background:#222;
 
 }
@@ -18,4 +19,5 @@ canvas {
     height: var(--height);
     margin-left: var(--margin-left);
     margin-top: var(--margin-top);
+    transform: scale(1.4);
 }
