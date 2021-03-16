@@ -112,7 +112,7 @@ const settings = {
     },
 
     other: {
-        godMode: true,
+        godMode: false,
         boardSize: 25,
         pause: false,
         game: 'menu'
